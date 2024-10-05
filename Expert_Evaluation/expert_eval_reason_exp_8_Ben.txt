@@ -1,0 +1,170 @@
+Background ID: 30, Question ID: 2
+Automatic matched score from GPT4o: 3
+人工给分：1，缺少阴离子配位这个关键假设。
+
+#===============================
+
+Background ID: 31, Question ID: 0
+Automatic matched score from GPT4o: 5
+人工给分：2，Pd/Cu催化体系假设正确，但其他点没有踩中。
+
+Background ID: 31, Question ID: 1
+Automatic matched score from GPT4o: 5
+人工给分：2，Pd/Cu催化体系假设正确，但其他点没有踩中，甚至有光催化的误导。
+
+Background ID: 31, Question ID: 2
+Automatic matched score from GPT4o: 5
+人工给分：2，同上。
+
+Background ID: 31, Question ID: 3
+Automatic matched score from GPT4o: 5
+人工给分：2，同上。
+
+#===============================
+
+Background ID: 32, Question ID: 0
+Automatic matched score from GPT4o: 5
+人工给分：2，铜催化正确，配体与双金属催化的提及均错误。
+
+Background ID: 32, Question ID: 1
+Automatic matched score from GPT4o: 3
+人工给分：2，铜催化正确，配体以及其他催化条件错误。
+
+#===============================
+
+Background ID: 33, Question ID: 0
+Automatic matched score from GPT4o: 5
+人工给分：3，生成的假设前半段完全符合实验，但是后半段关于光催化的完全脱离实际，有严重的误导。
+
+Background ID: 33, Question ID: 1
+Automatic matched score from GPT4o: 5
+人工给分：2，提到了弱配位导向以及Ni催化正确，其余包括机制解释等都有严重的错误。
+
+Background ID: 33, Question ID: 2
+Automatic matched score from GPT4o: 2
+人工给分：2，同上。
+
+#===============================
+
+Background ID: 35, Question ID: 0
+Automatic matched score from GPT4o: 5
+人工给分：0，反应条件与事实完全不符（金属与配体均错误）。
+
+Background ID: 35, Question ID: 1
+Automatic matched score from GPT4o: 5
+人工给分：0，反应条件与事实完全不符（生成的假设说双金属催化，不存在的；金属与配体均错误）。
+
+Background ID: 35, Question ID: 2
+Automatic matched score from GPT4o: 5
+人工给分：0，同上，完全不对。
+
+Background ID: 35, Question ID: 3
+Automatic matched score from GPT4o: 5
+人工给分：0，同上，完全不对。
+
+#===============================
+
+Background ID: 36, Question ID: 0-3
+人工给分：0，完全不对。
+
+#===============================
+
+Background ID: 37, Question ID: 0
+人工给分：3，多重键对了一半，不一定是三键，卡宾配体正确，其余信息错误，比如双配体催化。
+
+Background ID: 37, Question ID: 1
+人工给分：2，多重键对了一半，不一定是三键，卡宾配体正确，其余信息错误比0具有更严重的误导性。
+
+Background ID: 37, Question ID: 2-3
+人工给分：3，同0。
+
+#===============================
+
+Background ID: 38, Question ID: 0-3
+人工给分：3，自由基与双催化体系踩点，但是电催化不是本文采取的策略，且后面提到的什么膜应该是材料领域的应用与本文无关，四个都是一样的问题。
+
+#===============================
+
+Background ID: 39, Question ID: 0
+人工给分：3，配体猜测大致正确，关键的金属预测错误
+
+Background ID: 39, Question ID: 1
+人工给分：3，金属猜测正确，配体猜测错误
+
+Background ID: 39, Question ID: 1
+人工给分：1，仅仅猜测正确了一个金属
+
+#===============================
+
+Background ID: 41, Question ID: 0，2
+人工给分：0，与文章中所提及的方法完全是两个不同的方向
+
+Background ID: 41, Question ID: 1，3
+人工给分：1，仅密度泛函理论设计思想符合本文。
+
+#===============================
+
+Background ID: 42, Question ID: 0-2
+人工给分：0，与文章中所提及的方法完全是两个不同的方案
+
+Background ID: 41, Question ID: 3
+人工给分：2，过硫酸盐猜测正确，其余猜测错误。
+
+#===============================
+
+Background ID: 43, Question ID: 0
+人工给分：2，提到了钯和三叔丁基膦配体，但后面写的都是镍催化与本文毫不相关。
+
+Background ID: 43, Question ID: 3
+人工给分：2，光催化思路错误。
+
+#===============================
+
+Background ID: 44, Question ID: 0
+人工给分：0，溶剂和催化体系猜测完全不对以及本文并没有提供DFT计算。
+
+Background ID: 44, Question ID: 1
+人工给分：3，溶剂猜测不对。
+
+Background ID: 44, Question ID: 2
+人工给分：2，仅猜测除了金属催化剂。
+
+#===============================
+
+Background ID: 45, Question ID: 0-3
+人工给分：0，回答好不相干。
+
+#===============================
+
+Background ID: 46, Question ID: 0-1
+人工给分：2，仅仅膦配体预测正确。
+
+Background ID: 46, Question ID: 2
+人工给分：4，预测基本正确，除了溶剂小错误。
+
+（案例）
+An enantioselective [2+2+1] cycloaddition involving cycloalkenes, acetylenecarboxylates, and terminal alkynes can be achieved using a dynamically tunable Rh(I) pincer complex system, specifically incorporating PNP and PONOP ligands, to control the alkyne-to-vinylidene transformation and enhance selectivity towards chiral 3-methylenecyclopent-1-ene derivatives. By adjusting the P–Rh–P bite angle with novel ligand modifications and utilizing a blended solvent system containing toluene and dichloromethane at controlled temperatures (25°C to 80°C), reaction conditions can be fine-tuned to suppress side reactions. Computational methods (DFT, QTAIM, and NBO) will guide the optimization process, supported by real-time monitoring using FTIR and NMR. Exploring dual-ligand strategies, including phosphine/phosphinite combinations, will offer insights into previously unreported mechanistic pathways, ensuring a reproducible and scalable synthesis method applicable to pharmaceuticals and advanced material synthesis.
+
+Background ID: 46, Question ID: 3
+人工给分：3，光催化与反应不符合，扣分。
+
+#===============================
+
+Background ID: 47, Question ID: 0
+人工给分：3，没有使用双波长催化，也没有使用混合溶剂体系，但推荐的混合溶剂的组成都有较高的收率。
+
+A sophisticated dual-modal photoredox strategy synergistically integrates phosphorus ylides with a synchronized dual-wavelength excitation (450 nm and 520 nm) system to incite a regioselective three-component cycloaddition. This method exploits both net-neutral radical/polar crossover pathways and metal-free carbyne generation to convert inert C–H and C=P bonds into C–C and C=C bonds efficiently. Implemented within an optimized mixed solvent system (acetone/acetonitrile) under an ambient nitrogen atmosphere, the approach utilizes precise kinetic modulation and catalytic control, with computational validation (employing DFT models) underpinning mechanistic insights and regioselectivity. Experimental verification through in situ spectroscopic techniques (e.g., UV-Vis and NMR) enhances synchronization precision, curtailing side reactions. This methodology pledges substantial advancements in sustainable pharmaceutical synthesis and innovative polymer architecture formation, specifically by improving production efficiency for complex molecules and novel materials.
+
+#===============================
+
+Background ID: 48, Question ID: 0-3
+人工给分：0，完全跑题。
+
+
+
+
+
+
+
+
+

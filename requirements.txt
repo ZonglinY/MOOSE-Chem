@@ -1,0 +1,13 @@
+torch
+pdfminer
+markdown
+transformers
+datasets
+peft
+matplotlib
+pandas
+scikit-learn
+scipy
+numpy
+openai
+openpyxl
