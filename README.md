@@ -1,9 +1,16 @@
 # MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses
 
 We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypotheses discovery. 
-With only LLMs with trained data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (and only available online in 2024), with very high similarity.
 
-The input to the framework can be as simple as only:
+With only LLMs with training data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (also only available online in 2024) with very high similarity, covering the main innovations.
+
+
+
+<p align="center" width="100%">
+  <img src="./Resources/main_figure.png" alt="MOOSE-Chem" style="width: 35%; display: block; margin: auto;"></a>
+</p>
+
+The input to MOOSE-Chem can be as simple as only:
 
 &emsp;(1) a research question on any chemistry & material science domain;
 
@@ -79,6 +86,7 @@ python -u evaluate.py --model_name gpt4 \
 ---------
 
 These basic commands for the three stages can also be found in ```main.sh```. 
+
 ```Assumption1-RetrieveUnseen.sh``` and ```Assumption2-Reason2Unknown.sh``` contain combinations of these three basic commands (with different arg parameters) to investigate LLMs' ability on these three aspects.
 
 ## Analysis
