@@ -1,22 +1,39 @@
 # MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses
 
 We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypotheses discovery. 
-With only LLMs with trained data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature and Science in 2024 (and only available online in 2024), with very high similarity.
+With only LLMs with trained data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (and only available online in 2024), with very high similarity.
 
-The input to the framework can be as simple as only 
+The input to the framework can be as simple as only:
 
-(1) a research question on any chemistry & material science domain (and preferably but optionally also a little survey containing several paragraphs describing the existing methods for the research question); and
+&emsp;(1) a research question on any chemistry & material science domain;
 
-(2) many randomly selected chemistry published papers, preferably on top venues.
+&emsp;(2) (optionally) a several-paragraph-long survey describing the existing methods for the research question;
+
+&emsp;(3) (this repo contains the default 3000 papers) title and abstract of many random chemistry papers, preferably published on top venues.
 
 **MOOSE-Chem** can then output a list of ranked chemistry hypotheses (might take a few hours to "think") that could be both novel and valid.
 
-This repo contains all the code of **MOOSE-Chem**, to help accelerate the chemistry scientific discovery process all around the world.
+
+---------- 
+
+This repo contains all the code of **MOOSE-Chem**, to help every chemistry lab to catalyze their chemistry scientific discovery process.
 
 In general, **MOOSE-Chem** contains three stages: 
 (1) inspiration retrieval;
 (2) hypothesis generation; and
 (3) ranking.
+
+The commands for the three stages are introduced after the "quick start".
+
+## Quick Start
+
+```
+git clone https://github.com/ZonglinY/MOOSE-Chem.git
+cd MOOSE-Chem
+conda create -n msc python=3.8
+conda activate msc
+pip install -r requirements.txt
+```
 
 ## Inspiration Retrieval
 
@@ -59,8 +76,9 @@ python -u evaluate.py --model_name gpt4 \
         --if_save 1 --if_load_from_saved 0 \
 ```
 
+---------
 
-These basic commands for the three stages can be found in ```main.sh```. 
+These basic commands for the three stages can also be found in ```main.sh```. 
 ```Assumption1-RetrieveUnseen.sh``` and ```Assumption2-Reason2Unknown.sh``` contain combinations of these three basic commands (with different arg parameters) to investigate LLMs' ability on these three aspects.
 
 ## Analysis
