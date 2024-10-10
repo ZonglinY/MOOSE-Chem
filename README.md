@@ -1,5 +1,13 @@
 # MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses
 
+
+
+
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40Us)](https://x.com/Yang_zy223)
+![GitHub Repo stars](https://img.shields.io/github/stars/ZonglinY/MOOSE-Chem%20)
+<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FZonglinY%2FMOOSE-Chem&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
+<a href="https://arxiv.org/abs/2410.07076">📜 arXiv</a>
+
 We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypotheses discovery. 
 
 With only LLMs with training data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (also only available online in 2024) with very high similarity, covering the main innovations.
