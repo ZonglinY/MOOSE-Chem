@@ -15,7 +15,7 @@ With only LLMs with training data up to October 2023, it has rediscovered many c
 
 
 <p align="center" width="100%">
-  <img src="./Resources/main_figure.png" alt="MOOSE-Chem" style="width: 35%; display: block; margin: auto;"></a>
+  <img src="./Resources/main_figure_io.png" alt="MOOSE-Chem" style="width: 75%; display: block; margin: auto;"></a>
 </p>
 
 The input to MOOSE-Chem can be as simple as only:
