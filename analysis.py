@@ -1,6 +1,6 @@
 from ast import List
 import numpy as np
-import json, random
+import json, random, copy
 from utils import load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, load_bkg_and_insp_from_chem_annotation, load_chem_annotation, if_element_in_list_with_similarity_threshold
 from sympy import N
 np.set_printoptions(precision=2)
@@ -263,7 +263,7 @@ def compare_similarity_between_inspiration_retrieval_and_similarity_retrieval(in
 
 def check_moosechem_output():
     # display_rank_idx: the rank of the hypothesis (based on its average score) to display
-    chem_annotation_path = "./chem_research_2024.xlsx"
+    chem_annotation_path = "./Data/chem_research_2024.xlsx"
     background_question_id = 36
     display_rank_idx = 2
     if_use_strict_survey_question = 1
@@ -337,7 +337,7 @@ def get_average_screened_insp_hit_ratio_from_a_series_of_files(file_root_name_pa
 # get_expert_eval_file_type: 0: don't collect hypotheses collection file for expert evaluation; 1: collect 2 top and 2 random (for exp5); 2: collect 4 top (for exp8)
 # if_save: if save the hypotheses collection file for expert evaluation
 # if_not_only_from_gdth_insp: if the file in file_root_name_path is not only from gdth hypotheses (if not, cnt_matched_insp might be zero, and therefore cur_matched_insp_hyp_collection file could be None or empty)
-def get_top_matched_score_for_each_background(file_root_name_path, data_id_range, chem_annotation_path="./chem_research_2024.xlsx", if_use_strict_survey_question=1, get_expert_eval_file_type=0, if_save=False, if_not_only_from_gdth_insp=False):
+def get_top_matched_score_for_each_background(file_root_name_path, data_id_range, chem_annotation_path="./Data/chem_research_2024.xlsx", if_use_strict_survey_question=1, get_expert_eval_file_type=0, if_save=False, if_not_only_from_gdth_insp=False):
     assert len(data_id_range) == 2
     assert data_id_range[1] >= data_id_range[0]
     assert get_expert_eval_file_type in [0, 1, 2]
@@ -521,7 +521,7 @@ def get_rid_of_mutation_ids_in_found_insps(found_insps):
 # data_id_range: [start_id, end_id], including both start_id and end_id
 # max_step: -1: include all steps; if positive: only include steps <= max_step
 # Q: currently if the ranking is [4,4,4,4], their rank id is [1,2,3,4]; but it might be better to be [2.5,2.5,2.5,2.5]
-def get_average_ranking_position_for_hyp_with_gdth_insp(file_root_name_path, data_id_range, chem_annotation_path="./chem_research_2024.xlsx", if_random_order=False, keep_top_ratio=1.0, max_step=-1):
+def get_average_ranking_position_for_hyp_with_gdth_insp(file_root_name_path, data_id_range, chem_annotation_path="./Data/chem_research_2024.xlsx", if_random_order=False, keep_top_ratio=1.0, max_step=-1):
     assert len(data_id_range) == 2
     assert data_id_range[1] >= data_id_range[0]
     assert if_random_order in [True, False]
@@ -716,11 +716,90 @@ def read_expert_eval_results(expert_eval_file_path):
     print("top_matched_score_expert_collection: {}".format(top_matched_score_expert_collection))
     
     
+## FUNCTION:
+#   give a evaluation file, and the selected hyp idex, find the full reasoning trace of that selected hyp
+# Output
+#   all_steps_idx: [selected_hyp_idx, (optional) prev index of selected_hyp_idx, (optional) prev prev index of selected_hyp_idx]
+def find_full_reasoning_line(eval_file_dir, bkg_idx=0, selected_hyp_idx=0):
+    eval_file_dir = eval_file_dir + str(bkg_idx) + ".json"
+    with open(eval_file_dir, 'r') as f:
+        d = json.load(f)
+    b = list(d[0].keys())[0]
+    # select a hyp to find its source; here we just use the first hyp
+    selected_hyp = d[0][b][selected_hyp_idx][0]
+    insp_trace = d[0][b][selected_hyp_idx][5]
+
+    all_hyp_insp_trace = [sorted(d[0][b][cur_id][5]) for cur_id in range(len(d[0][b]))]
+
+    # OUTPUT
+    #   None (if cur_insp_trace represents the first step)
+    #   [potential_prev_insp_trace_0, ...] (if cur_insp_trace represents the second or the third step)
+    def obtain_prev_step_hyp_insp_trace(cur_insp_trace):
+        prev_insp_trace_list = []
+        # check if the third step
+        if 'inter_recom_2' in cur_insp_trace:
+            prev_insp_trace = copy.deepcopy(cur_insp_trace)
+            prev_insp_trace.remove('inter_recom_2')
+            potential_this_step_insp_list = []
+            clustered_insp = None
+            for cur_d in prev_insp_trace:
+                if ';' not in cur_d:
+                    potential_this_step_insp_list.append(cur_d)
+                else:
+                    assert clustered_insp == None
+                    clustered_insp = cur_d
+            assert clustered_insp != None, print("cur_insp_trace: ", cur_insp_trace)
+            clustered_insp_split = clustered_insp.split(';')
+            prev_insp_trace.remove(clustered_insp)
+            prev_insp_trace += clustered_insp_split
+            for cur_insp in potential_this_step_insp_list:
+                cur_prev_insp_trace = copy.deepcopy(prev_insp_trace)
+                # print("cur_prev_insp_trace: ", cur_prev_insp_trace)
+                # print("cur_insp: ", cur_insp)
+                cur_prev_insp_trace.remove(cur_insp)
+                prev_insp_trace_list.append(cur_prev_insp_trace)
+            return prev_insp_trace_list
+        # check if the second step
+        elif 'inter_recom_1' in cur_insp_trace:
+            prev_insp_trace = copy.deepcopy(cur_insp_trace)
+            prev_insp_trace.remove('inter_recom_1')
+            potential_this_step_insp_list = []
+            for cur_d in prev_insp_trace:
+                # 0; 1; 2; recom
+                if len(cur_d) > 6:
+                    potential_this_step_insp_list.append(cur_d)
+            for cur_insp in potential_this_step_insp_list:
+                cur_prev_insp_trace = copy.deepcopy(prev_insp_trace)
+                cur_prev_insp_trace.remove(cur_insp)
+                prev_insp_trace_list.append(cur_prev_insp_trace)
+            return prev_insp_trace_list
+        # the first step
+        else:
+            return None
+            
+    cur_insp_trace = insp_trace
+    # all_steps_idx: [this step idx, prev step idx, prev prev step idx]
+    all_steps_idx = [selected_hyp_idx]
+    while True:
+        prev_insp_list = obtain_prev_step_hyp_insp_trace(cur_insp_trace)
+        if prev_insp_list == None:
+            break
+        # find prev_step_index
+        prev_step_index = None
+        for cur_prev_insp in prev_insp_list:
+            cur_prev_insp = sorted(cur_prev_insp)
+            if cur_prev_insp in all_hyp_insp_trace:
+                prev_step_index = all_hyp_insp_trace.index(cur_prev_insp)
+                all_steps_idx.append(prev_step_index)
+                break
+        if prev_step_index == None:
+            print("prev_insp_list: \n", prev_insp_list)
+            print("\ncur_insp_trace: \n", cur_insp_trace)
+        assert prev_step_index != None
+        cur_insp_trace = d[0][b][prev_step_index][5]
+    return all_steps_idx
 
 
-
-
-    
 
 
 if __name__ == "__main__":
@@ -730,20 +809,24 @@ if __name__ == "__main__":
     # check_difference_inspiration_retrieval_similarity_retrieval()
 
     ## Assumption 1
-    # file_root_name_path = "./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_"
-    # data_id_range = [0, 50]
-    # # round_id = 3
-    # for round_id in range(0, 4):
-    #     get_average_screened_insp_hit_ratio_from_a_series_of_files(file_root_name_path, data_id_range, round_id)
+    # coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_
+    file_root_name_path = "./Checkpoints/coarse_inspiration_search_llama318b_corpusSize_1000_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_"
+    data_id_range = [0, 50]
+    # round_id = 3
+    for round_id in range(0, 4):
+        get_average_screened_insp_hit_ratio_from_a_series_of_files(file_root_name_path, data_id_range, round_id)
 
 
     ## Assumption 2
     # (gdth insp; MOOSE-Chem) evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_
+    # (gdth insp; MOOSE-Chem, claude-3.5-Sonnet eval) evaluation_claude35S_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_
+    # (gdth insp; MOOSE-Chem, without significance feedback (baseline 3); claude-3.5-Sonnet eval) evaluation_claude35S_baseline_3_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_
     # (full insp; MOOSE-chem) evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_
-    # file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_"
+    # (full insp; MOOSE-Chem; claude-3.5-Sonnet eval) evaluation_claude35S_baseline_0_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_
+    # file_root_name_path = "./Checkpoints/evaluation_gemini15P_corpus_300_survey_0_gdthInsp_1_intraEA_1_interEA_1_bkgid_"
     # data_id_range = [0, 50]
-    # get_expert_eval_file_type = 2
-    # if_save = True
+    # get_expert_eval_file_type = 0
+    # if_save = False
     # if_not_only_from_gdth_insp = True
     # get_top_matched_score_for_each_background(file_root_name_path, data_id_range, get_expert_eval_file_type=get_expert_eval_file_type, if_save=if_save, if_not_only_from_gdth_insp=if_not_only_from_gdth_insp)
 
@@ -752,7 +835,7 @@ if __name__ == "__main__":
     # evaluation_gpt4_intraEA_1_interEA_1_gdthInsp_1_bkgid_
     # (full insp; MOOSE-chem) evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_
     # (baseline) evaluation_gpt4_baseline_2_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_0_interEA_0_beamsize_15_bkgid_
-    # file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_"
+    # file_root_name_path = "./Checkpoints/evaluation_gemini15P_baseline_0_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_0_interEA_1_beamsize_15_bkgid_"
     # data_id_range = [0, 50]
     # if_random_order = False
     # keep_top_ratio = 1.0
@@ -765,5 +848,11 @@ if __name__ == "__main__":
     # expert_eval_for_selected_hyp_in_exp_5_BenGao
     # expert_eval_for_selected_hyp_in_exp_8_Wanhao
     # expert_eval_for_selected_hyp_in_exp_8_Ben
-    expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_8_Ben.json"
-    read_expert_eval_results(expert_eval_file_path)
+    # expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_8_Ben.json"
+    # read_expert_eval_results(expert_eval_file_path)
+
+
+    ## Analyze the full reasoning intermediate steps of a final step hypothesis
+    # file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_0_interEA_1_beamsize_15_bkgid_"
+    # all_steps_idx = find_full_reasoning_line(file_root_name_path, bkg_idx=0, selected_hyp_idx=0)
+    # print("all_steps_idx: ", all_steps_idx)

@@ -192,7 +192,7 @@ class Screening(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k")
+    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b")
     parser.add_argument("--api_type", type=int, default=1, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
     parser.add_argument("--api_key", type=str, default="")
     parser.add_argument("--num_screening_window_size", type=int, default=10, help="how many abstract we use in a single inference of llm to screen inspiration candidates")
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4']
+    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b']
     assert args.api_type in [0, 1, 2]
     # assert args.if_save in [0, 1]
     assert args.num_screening_window_size >= 10

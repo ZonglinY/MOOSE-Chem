@@ -663,6 +663,7 @@ class HypothesisGenerationEA(object):
     #   2: recombinational mutation between the final hypothesis developed from (the same background and) different inspirations;
     #   1: recombinational mutation between the last refined hypothesis over each mutation line. Each line is developed from the same background and the same inspiration; 
     #   0: develop a new mutation line
+    #   -1: no recombinational mutation at all, even no combination between background and inspiration, since we don't retrieve inspirations for this baseline (baseline_type 2)
     # diffence between same_mutation_prev_hyp and other_mutations: same_mutation_prev_hyp follow the same type of mutation, and other_mutations are different types of mutations
     # this_mutation: text of a hypothesis (already developed based on cur_insp_core_node); only used when recombination_type=2
     ## Output
@@ -801,6 +802,9 @@ class HypothesisGenerationEA(object):
         if self.args.baseline_type == 1:
             # only novelty checker, no reality checker nor clarity checker (Scimon)
             prompts = instruction_prompts("novelty_checking")
+        elif self.args.baseline_type == 3:
+            # no significance checker, but only novelty, reality, and clarity checker
+            prompts = instruction_prompts("three_aspects_checking_no_significance")
         else:
             # normal setting
             if if_with_external_knowledge_feedback:
@@ -862,7 +866,7 @@ class HypothesisGenerationEA(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Hypothesis generation')
-    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k")
+    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P")
     parser.add_argument("--api_type", type=int, default=1, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
     parser.add_argument("--api_key", type=str, default="")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
@@ -912,10 +916,10 @@ if __name__ == "__main__":
     parser.add_argument("--if_use_gdth_insp", type=int, default=0, help="whether directly load groundtruth inspirations (instead of screened inspirations) for hypothesis generation")
     parser.add_argument("--if_consider_external_knowledge_feedback_during_second_refinement", type=int, default=0, help="during the second hypothsis refinement, whether the feedback to hypothesis will consider to add external knowledge to make the hypothesis more complete")
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
-    parser.add_argument("--baseline_type", type=int, default=0, help="0: not using baseline; 1: MOOSE w/o novelty and clarity checker (Scimon); 2. MOOSE w/o novelty retrieval (<Large Language Models are Zero Shot Hypothesis Proposers>)")
+    parser.add_argument("--baseline_type", type=int, default=0, help="0: not using baseline; 1: MOOSE w/o novelty and clarity checker (Scimon); 2. MOOSE w/o novelty retrieval (<Large Language Models are Zero Shot Hypothesis Proposers>); 3: MOOSE-Chem w/o significance checker")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4']
+    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P']
     assert args.api_type in [0, 1, 2]
     assert args.if_use_background_survey in [0, 1]
     assert args.if_use_strict_survey_question in [0, 1]
@@ -933,8 +937,8 @@ if __name__ == "__main__":
     # change args.title_abstract_all_insp_literature_path
     assert args.title_abstract_all_insp_literature_path == "./title_abstract.json"
     args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
-    assert args.baseline_type in [0, 1, 2]
-    if args.baseline_type != 0:
+    assert args.baseline_type in [0, 1, 2, 3]
+    if args.baseline_type not in [0, 3]:
         print("Warning: Running baseline {}..".format(args.baseline_type))
         # the baseline is based on MOOSE, not MOOSE-Chem, so we set up the parameters for MOOSE
         assert args.if_mutate_inside_same_bkg_insp == 0 and args.if_mutate_between_diff_insp == 0 and args.if_self_explore == 0
