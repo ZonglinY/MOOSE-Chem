@@ -1,12 +1,12 @@
-<!--# MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses -->
+# MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses
 
 
 
 
-<!-- [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40Us)](https://x.com/Yang_zy223)
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40Us)](https://x.com/Yang_zy223)
 [![GitHub Repo stars](https://img.shields.io/github/stars/ZonglinY/MOOSE-Chem%20)](https://github.com/ZonglinY/MOOSE-Chem)
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FZonglinY%2FMOOSE-Chem&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
-[![arXiv](https://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2410.07076) -->
+[![arXiv](https://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2410.07076)
 
 We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypotheses discovery. 
 
@@ -40,7 +40,7 @@ In general, **MOOSE-Chem** contains three stages:
 
 The commands for the three stages are introduced after the "quick start".
 
-<!--## Quick Start
+## Quick Start
 
 ```
 git clone https://github.com/ZonglinY/MOOSE-Chem.git
@@ -48,7 +48,7 @@ cd MOOSE-Chem
 conda create -n msc python=3.8
 conda activate msc
 pip install -r requirements.txt
-```-->
+```
 
 ## Inspiration Retrieval
 
@@ -99,8 +99,8 @@ These basic commands for the three stages can also be found in ```main.sh```.
 
 ## Analysis
 
-<!--```analysis.py``` can be used to analyze the results of the three stages. 
-This [link](https://drive.google.com/file/d/1oboWo2f7jlgio-AXebt7UPqw2P6mX1lJ/view?usp=sharing) stores the result files from all the experiments mentioned in the paper. They can be used with ```analysis.py``` to display the experiment results reported in the paper.-->
+```analysis.py``` can be used to analyze the results of the three stages. 
+This [link](https://drive.google.com/file/d/1oboWo2f7jlgio-AXebt7UPqw2P6mX1lJ/view?usp=sharing) stores the result files from all the experiments mentioned in the paper. They can be used with ```analysis.py``` to display the experiment results reported in the paper.
 
 ## An Example
 
