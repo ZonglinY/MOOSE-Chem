@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J exp1_113
-#SBATCH -o logs/exp1_113
-#SBATCH -e logs/exp1_113
+#SBATCH -J exp1_70b
+#SBATCH -o logs/exp1_70b
+#SBATCH -e logs/exp1_70b
 #SBATCH -p AI4Chem        
 #SBATCH -N 1                
 #SBATCH -n 1              
@@ -9,7 +9,7 @@
 
 
 api_key="sk-"
-model_name_insp_retrieval="llama318b"
+model_name_insp_retrieval="llama3170b"
 
 
 ## Define the base command, that is shared across all experiments
@@ -22,7 +22,7 @@ base_command="python -u inspiration_screening.py --model_name ${model_name_insp_
 
 # Experiment 1: Main Table for Assumption 1
 
-for corpus_size in 150 1000 3000
+for corpus_size in 300
 do
         echo corpus_size: $corpus_size
         for id in {0..50}

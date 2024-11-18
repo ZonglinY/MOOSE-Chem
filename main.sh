@@ -24,7 +24,7 @@ api_key="sk-"
         
 
 
-# # hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0
+# # # hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0
 # python -u hypothesis_generation.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
@@ -50,11 +50,11 @@ api_key="sk-"
 
 
 # evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_
-model_name=claude35S
-python -u groundtruth_hyp_ranking.py --model_name ${model_name} \
-        --api_type 0 --api_key ${api_key} \
-        --evaluate_result_dir ./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_ \
-        --if_save 1 --output_dir ./Checkpoints/groundtruth_hypothesis_automatic_scores_four_aspects_${model_name}.json
+# model_name=gpt4
+# python -u groundtruth_hyp_ranking.py --model_name ${model_name} \
+#         --api_type 0 --api_key ${api_key} \
+#         --evaluate_result_dir ./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_ \
+#         --if_save 1 --output_dir ./Checkpoints/groundtruth_hypothesis_automatic_scores_four_aspects_${model_name}.json
 
 
 

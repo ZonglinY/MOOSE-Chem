@@ -5,11 +5,15 @@ from utils import instruction_prompts, load_chem_annotation, load_title_abstract
 
 # Coarse grained inspiration screening
 class Screening(object):
-    def __init__(self, args):
+    # custom_rq (text) and custom_bs (text) are used when the user has their own research question and background survey to work on (but not those in the Tomato-Chem benchmark), and leverage MOOSE-Chem for inference
+    def __init__(self, args, custom_rq=None, custom_bs=None):
         self.args = args
+        self.custom_rq = custom_rq
+        self.custom_bs = custom_bs
         # set OpenAI API key
         if args.api_type == 0:
             self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
+            # self.client = OpenAI(api_key=args.api_key, base_url="https://api2.aigcbest.top/v1")
         elif args.api_type == 1:
             self.client = AzureOpenAI(
                 azure_endpoint = "https://gd-sweden-gpt4vision.openai.azure.com/", 
@@ -24,8 +28,16 @@ class Screening(object):
             )
         else:
             raise NotImplementedError
-        # annotated bkg research question and its annotated groundtruth inspiration paper titles
-        self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question, self.args.if_use_background_survey)     
+        # Use the research question and background survey in Tomato-Chem or the custom ones from input
+        if custom_rq == None and custom_bs == None:
+            # annotated bkg research question and its annotated groundtruth inspiration paper titles
+            self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question, self.args.if_use_background_survey)     
+        else:
+            print("INFO: Using custom_rq and custom_bs.")
+            assert custom_rq != None
+            self.bkg_q_list = [custom_rq]
+            self.dict_bkg2survey = {custom_rq: custom_bs}
+            self.dict_idx2bkg = {0: custom_rq} 
         # dict_title_2_abstract: {'title': 'abstract', ...}
         self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)   
         # title and abstract of groundtruth inspiration papers and random high-quality papers：[[title, abstract], ...]
@@ -55,15 +67,19 @@ class Screening(object):
                 screen_results, cur_next_round_inspiration_candidates = self.one_round_screening(cur_bkg_q, cur_next_round_inspiration_candidates)
                 print("Screening Round: {}; len(screen_results): {}".format(cur_screen_round, len(screen_results)))
                 # ratio_hit: [ratio_hit_in_top1, ratio_hit_in_top3]
-                ratio_hit = self.check_how_many_hit_groundtruth_insp(cur_bkg_q, screen_results)
+                # when using custom_rq, we don't know the groundtruth insp to check ratio hit
+                if self.custom_rq == None:
+                    ratio_hit = self.check_how_many_hit_groundtruth_insp(cur_bkg_q, screen_results)
                 if cur_screen_round == 0:
                     assert cur_bkg_q not in Dict_bkg_q_2_screen_results
                     assert cur_bkg_q not in Dict_bkg_q_2_ratio_hit
                     Dict_bkg_q_2_screen_results[cur_bkg_q] = [screen_results]
-                    Dict_bkg_q_2_ratio_hit[cur_bkg_q] = [ratio_hit]
+                    if self.custom_rq == None:
+                        Dict_bkg_q_2_ratio_hit[cur_bkg_q] = [ratio_hit]
                 else:
                     Dict_bkg_q_2_screen_results[cur_bkg_q].append(screen_results)
-                    Dict_bkg_q_2_ratio_hit[cur_bkg_q].append(ratio_hit)
+                    if self.custom_rq == None:
+                        Dict_bkg_q_2_ratio_hit[cur_bkg_q].append(ratio_hit)
                 
         # organize raw inspirations
         # Dict_bkg_q_2_screen_results: {'bq': [screen_results_round1, screen_results_round2, ...], ...}
@@ -90,7 +106,9 @@ class Screening(object):
     #   screen_results: [[[title, reason], [title, reason]], [[], []], ...]
     #   next_round_inspiration_candidates: [[title, abstract], [title, abstract], ...]
     def one_round_screening(self, bkg_research_question, inspiration_candidates=None):
-        assert bkg_research_question in self.dict_bkg2insp
+        # when self.custom_rq is not None, we don't need to check this (and also we won't initialize self.dict_bkg2insp)
+        if self.custom_rq == None:
+            assert bkg_research_question in self.dict_bkg2insp
         # backgroud_survey
         backgroud_survey = self.dict_bkg2survey[bkg_research_question]
         # print("Current background research question: ", bkg_research_question)
@@ -192,7 +210,7 @@ class Screening(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b")
+    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b/llama3170b/llama31405b")
     parser.add_argument("--api_type", type=int, default=1, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
     parser.add_argument("--api_key", type=str, default="")
     parser.add_argument("--num_screening_window_size", type=int, default=10, help="how many abstract we use in a single inference of llm to screen inspiration candidates")
@@ -209,7 +227,7 @@ if __name__ == '__main__':
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b']
+    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
     assert args.api_type in [0, 1, 2]
     # assert args.if_save in [0, 1]
     assert args.num_screening_window_size >= 10
@@ -226,11 +244,15 @@ if __name__ == '__main__':
     # args.output_dir = os.path.abspath(args.output_dir)
     print("args: ", args)
 
+    # initialize custom_rq and custom_bs to text to use them for inference (but not those in the Tomato-Chem benchmark)
+    custom_rq, custom_bs = None, None
+    
+
     # run Screening
     if os.path.exists(args.output_dir):
         print("Warning: The output_dir already exists. Will skip this retrival.")
     else:
-        screening = Screening(args)
+        screening = Screening(args, custom_rq=custom_rq, custom_bs=custom_bs)
         screening.run()
     
 

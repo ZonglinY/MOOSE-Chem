@@ -203,7 +203,7 @@ class Evaluate(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hypothesis evaluation by reference')
-    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P")
+    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b/llama3170b/llama31405b")
     parser.add_argument("--api_type", type=int, default=1, help="1: use Dr. Xie's API; 0: use api from shanghai ai lab")
     parser.add_argument("--api_key", type=str, default="")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
@@ -216,7 +216,7 @@ if __name__ == '__main__':
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P']
+    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
     assert args.api_type in [0, 1, 2]
     assert args.if_use_strict_survey_question in [0, 1]
     assert args.if_save in [1]

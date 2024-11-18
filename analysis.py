@@ -671,9 +671,13 @@ def get_average_ranking_position_for_hyp_with_gdth_insp(file_root_name_path, dat
 
 
 # expert_eval_file: {bkg_id: {q_id: [gene_hyp, gdth_hyp, cnt_matched_insp, cur_matched_score, cur_matched_score_reason, expert_matched_score]}}
-def read_expert_eval_results(expert_eval_file_path):
+# second_expert_eval_file_path: if not None, then compare the matched score between two experts, else only compare the matched score between the model and the expert
+def read_expert_eval_results(expert_eval_file_path, second_expert_eval_file_path=None):
     with open(expert_eval_file_path, "r") as f:
         expert_eval_file = json.load(f)
+    if second_expert_eval_file_path != None:
+        with open(second_expert_eval_file_path, "r") as f:
+            second_expert_eval_file = json.load(f)
     seperate_bkg_id = 30
     num_q_per_bkg = 4
 
@@ -682,6 +686,9 @@ def read_expert_eval_results(expert_eval_file_path):
         assert expert_eval_file['19'][-1][5] == 3
     elif "Ben" in expert_eval_file_path:
         id_bkg_list = [str(i) for i in range(seperate_bkg_id, 51)]
+    elif "Penghui" in expert_eval_file_path:
+        # id_bkg_list = [str(i) for i in range(0, 6)] + [str(i) for i in range(seperate_bkg_id, seperate_bkg_id+6)]
+        id_bkg_list = [str(i) for i in range(0, 6)]
     else:
         raise ValueError("Invalid name")
 
@@ -689,15 +696,23 @@ def read_expert_eval_results(expert_eval_file_path):
     top_matched_score_expert_collection = {}
     hard_consistency_score, soft_consistency_score = 0, 0
     for cur_bkg_id in id_bkg_list:
+        # print("cur_bkg_id: ", cur_bkg_id)
         assert len(expert_eval_file[cur_bkg_id]) == num_q_per_bkg or len(expert_eval_file[cur_bkg_id]) == 0, print("len(expert_eval_file[cur_bkg_id]): ", len(expert_eval_file[cur_bkg_id]))
         if len(expert_eval_file[cur_bkg_id]) == 0:
             continue
         top_matched_score_expert = 0
         for cur_q_id in range(len(expert_eval_file[cur_bkg_id])):
+            
             # print("expert_eval_file[cur_bkg_id][cur_q_id]: ", expert_eval_file[cur_bkg_id][cur_q_id])
             assert len(expert_eval_file[cur_bkg_id][cur_q_id]) == 6, print("cur_bkg_id: {}; cur_q_id: {}".format(cur_bkg_id, cur_q_id))
-            cur_auto_score = int(expert_eval_file[cur_bkg_id][cur_q_id][3])
+            if second_expert_eval_file_path == None:
+                # score from gpt4o
+                cur_auto_score = int(expert_eval_file[cur_bkg_id][cur_q_id][3])
+            else:
+                # score from another expert
+                cur_auto_score = int(second_expert_eval_file[cur_bkg_id][cur_q_id][5])
             cur_expt_score = int(expert_eval_file[cur_bkg_id][cur_q_id][5])
+            # print("cur_auto_score: {}; cur_expt_score: {}".format(cur_auto_score, cur_expt_score))
             if cur_auto_score == cur_expt_score:
                 hard_consistency_score += 1
                 soft_consistency_score += 1
@@ -802,6 +817,55 @@ def find_full_reasoning_line(eval_file_dir, bkg_idx=0, selected_hyp_idx=0):
 
 
 
+# FUNCTION:
+#   find the effect of EU by understanding the high matched scored hypothesis from non-EU branch, all EU branch, and only recom branch
+def analyze_EU_find_proportion(eval_file_dir, start_bkg_idx=0, end_bkg_idx=51, threshold=4):
+    total_non_eu_scores = []
+    total_eu_scores = []
+    total_recom_scores = []
+    for cur_bkg_idx in range(start_bkg_idx, end_bkg_idx):
+        with open(eval_file_dir+str(cur_bkg_idx)+".json", 'r') as f:
+            full_data = json.load(f)
+            b = list(full_data[1].keys())[0]
+        cur_non_eu_scores = []
+        cur_eu_scores = []
+        cur_recom_scores = []
+        for cur_id in range(len(full_data[1][b])):
+            cur_insps = full_data[1][b][cur_id][5]
+            cur_matched_score = int(full_data[1][b][cur_id][6][0])
+            if cur_matched_score < threshold:
+                continue
+            if 'inter_recom_1' in cur_insps or 'inter_recom_2' in cur_insps:
+                continue
+            # print("cur_insps: ", cur_insps)
+            # print("cur_matched_score: ", cur_matched_score)
+            if '0' in cur_insps:
+                # non EU
+                cur_non_eu_scores.append(cur_matched_score)
+            else:
+                # EU
+                cur_eu_scores.append(cur_matched_score)
+            # only recom branch
+            if 'recom' in cur_insps:
+                cur_recom_scores.append(cur_matched_score)
+        total_non_eu_scores += cur_non_eu_scores
+        total_eu_scores += cur_eu_scores
+        total_recom_scores += cur_recom_scores
+
+    # total_non_eu_scores = sorted(total_non_eu_scores, reverse=True)
+    # total_eu_scores = sorted(total_eu_scores, reverse=True)
+    # total_recom_scores = sorted(total_recom_scores, reverse=True)
+    mean_non_eu_scores = np.mean(total_non_eu_scores)
+    mean_eu_scores = np.mean(total_eu_scores)
+    mean_recom_scores = np.mean(total_recom_scores)
+
+    print("len(total_non_eu_scores): {}; len(total_eu_scores): {}; len(total_recom_scores): {}".format(len(total_non_eu_scores), len(total_eu_scores), len(total_recom_scores)))
+    print("mean_non_eu_scores: {:.3f}; mean_eu_scores: {:.3f}; mean_recom_scores: {:.3f}".format(mean_non_eu_scores, mean_eu_scores, mean_recom_scores))
+
+
+
+
+
 if __name__ == "__main__":
     
     # check_moosechem_output()
@@ -810,11 +874,11 @@ if __name__ == "__main__":
 
     ## Assumption 1
     # coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_
-    file_root_name_path = "./Checkpoints/coarse_inspiration_search_llama318b_corpusSize_1000_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_"
-    data_id_range = [0, 50]
-    # round_id = 3
-    for round_id in range(0, 4):
-        get_average_screened_insp_hit_ratio_from_a_series_of_files(file_root_name_path, data_id_range, round_id)
+    # file_root_name_path = "./Checkpoints/coarse_inspiration_search_llama318b_corpusSize_1000_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_"
+    # data_id_range = [0, 50]
+    # # round_id = 3
+    # for round_id in range(0, 4):
+    #     get_average_screened_insp_hit_ratio_from_a_series_of_files(file_root_name_path, data_id_range, round_id)
 
 
     ## Assumption 2
@@ -848,11 +912,19 @@ if __name__ == "__main__":
     # expert_eval_for_selected_hyp_in_exp_5_BenGao
     # expert_eval_for_selected_hyp_in_exp_8_Wanhao
     # expert_eval_for_selected_hyp_in_exp_8_Ben
-    # expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_8_Ben.json"
-    # read_expert_eval_results(expert_eval_file_path)
+    # expert_eval_for_selected_hyp_in_exp_5_Penghui
+    # expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_5_Penghui.json"
+    # second_expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_5_Wanhao.json"
+    # # second_expert_eval_file_path = None
+    # read_expert_eval_results(expert_eval_file_path, second_expert_eval_file_path=second_expert_eval_file_path)
 
 
     ## Analyze the full reasoning intermediate steps of a final step hypothesis
     # file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_0_interEA_1_beamsize_15_bkgid_"
     # all_steps_idx = find_full_reasoning_line(file_root_name_path, bkg_idx=0, selected_hyp_idx=0)
     # print("all_steps_idx: ", all_steps_idx)
+
+
+    ## Find what proportion of high-scored (match score) hypothesis can be resulted from EU
+    file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_"
+    analyze_EU_find_proportion(file_root_name_path, start_bkg_idx=0, end_bkg_idx=51, threshold=0)

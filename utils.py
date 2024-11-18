@@ -346,6 +346,10 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
             model = "gemini-1.5-pro"
         elif model_name == "llama318b":
             model = "llama-3.1-8b"
+        elif model_name == "llama3170b":
+            model = "llama-3.1-70b"
+        elif model_name == "llama31405b":
+            model = "llama-3.1-405b"
         else:
             raise NotImplementedError
     elif api_type == 1:

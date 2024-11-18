@@ -6,8 +6,11 @@ import numpy as np
 from utils import load_chem_annotation, load_dict_title_2_abstract, load_found_inspirations, get_item_from_dict_with_very_similar_but_not_exact_key, instruction_prompts, llm_generation, get_structured_generation_from_raw_generation, pick_score, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_groundtruth_inspirations_as_screened_inspirations
 
 class HypothesisGenerationEA(object):
-    def __init__(self, args) -> None:
+    # custom_rq (text) and custom_bs (text) are used when the user has their own research question and background survey to work on (but not those in the Tomato-Chem benchmark), and leverage MOOSE-Chem for inference
+    def __init__(self, args, custom_rq=None, custom_bs=None) -> None:
         self.args = args
+        self.custom_rq = custom_rq
+        self.custom_bs = custom_bs
         # set OpenAI API key
         if args.api_type == 0:
             self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
@@ -25,8 +28,16 @@ class HypothesisGenerationEA(object):
             )
         else:
             raise NotImplementedError
-        # annotated bkg research question and its annotated groundtruth inspiration paper titles
-        self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question, self.args.if_use_background_survey)      
+        # Use the research question and background survey in Tomato-Chem or the custom ones from input
+        if custom_rq == None and custom_bs == None:
+            # annotated bkg research question and its annotated groundtruth inspiration paper titles
+            self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question, self.args.if_use_background_survey)   
+        else:
+            print("INFO: Using custom_rq and custom_bs.")
+            assert custom_rq != None
+            self.bkg_q_list = [custom_rq]
+            self.dict_bkg2survey = {custom_rq: custom_bs}
+            self.dict_idx2bkg = {0: custom_rq}   
         # title and abstract of groundtruth inspiration papers and random high-quality papers
         # dict_title_2_abstract: {'title': 'abstract', ...}
         self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)
@@ -866,7 +877,7 @@ class HypothesisGenerationEA(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Hypothesis generation')
-    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P")
+    parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b/llama3170b/llama31405b")
     parser.add_argument("--api_type", type=int, default=1, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
     parser.add_argument("--api_key", type=str, default="")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
@@ -919,7 +930,7 @@ if __name__ == "__main__":
     parser.add_argument("--baseline_type", type=int, default=0, help="0: not using baseline; 1: MOOSE w/o novelty and clarity checker (Scimon); 2. MOOSE w/o novelty retrieval (<Large Language Models are Zero Shot Hypothesis Proposers>); 3: MOOSE-Chem w/o significance checker")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P']
+    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
     assert args.api_type in [0, 1, 2]
     assert args.if_use_background_survey in [0, 1]
     assert args.if_use_strict_survey_question in [0, 1]
@@ -945,7 +956,10 @@ if __name__ == "__main__":
     # args.output_dir = os.path.abspath(args.output_dir)
     print("args: ", args)
 
-    
+    # initialize custom_rq and custom_bs to text to use them for inference (but not those in the Tomato-Chem benchmark)
+    custom_rq, custom_bs = None, None
+
+
     start_time = time.time()
 
     # load from existing collection
@@ -961,7 +975,7 @@ if __name__ == "__main__":
         print("Warning: {} already exists.".format(args.output_dir))
     else:
         # initialize an object
-        hyp_gene_ea = HypothesisGenerationEA(args)
+        hyp_gene_ea = HypothesisGenerationEA(args, custom_rq=custom_rq, custom_bs=custom_bs)
         # hypothesis generation for one background question
         final_data_collection = hyp_gene_ea.hypothesis_generation_for_one_background_question(background_question_id=args.background_question_id, inspiration_ids=args.inspiration_ids, final_data_collection=final_data_collection)
 

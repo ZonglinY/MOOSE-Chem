@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J exp6_GeminiEval
-#SBATCH -o logs/exp6_GeminiEval
-#SBATCH -e logs/exp6_GeminiEval
+#SBATCH -J exp5_llama
+#SBATCH -o logs/exp5_llama
+#SBATCH -e logs/exp5_llama
 #SBATCH -p AI4Chem        
 #SBATCH -N 1                
 #SBATCH -n 1                
@@ -11,8 +11,8 @@
 api_key="sk-"
 
 model_name_insp_retrieval="gpt4"
-model_name_gene="gpt4"
-model_name_eval="gemini15P"
+model_name_gene="llama318b"
+model_name_eval="gpt4"
 
 
 
@@ -20,24 +20,24 @@ model_name_eval="gemini15P"
 ## Experiment 5: Main Table for Assumption 2 (Main Table 1 and Main Table 2) (when if_use_background_survey == 1)
 ## Experiment 6: Alation Table on the role of background survey (when if_use_background_survey == 0)
 
-for if_use_background_survey in 1 0
+for if_use_background_survey in 1
 do
         echo "\n\nif_use_background_survey: $if_use_background_survey"
         for bkg_q_id in {0..50}
         do
-                # echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
-                # python -u hypothesis_generation.py --model_name ${model_name_gene} \
-                #         --api_type 0 --api_key ${api_key} \
-                #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey ${if_use_background_survey} \
-                #         --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_${if_use_background_survey}_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
-                #         --output_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_corpus_300_survey_${if_use_background_survey}_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
-                #         --if_save 1 --if_load_from_saved 0 \
-                #         --if_use_gdth_insp 1 --idx_round_of_first_step_insp_screening 0 \
-                #         --num_mutations 3 --num_itr_self_refine 3  --num_self_explore_steps_each_line 3 --num_screening_window_size 12 --num_screening_keep_size 3 \
-                #         --if_mutate_inside_same_bkg_insp 1 --if_mutate_between_diff_insp 1 --if_self_explore 0 --if_consider_external_knowledge_feedback_during_second_refinement 0 \
-                #         --inspiration_ids -1  --recom_inspiration_ids -1 --recom_num_beam_size 10  --self_explore_inspiration_ids  --self_explore_num_beam_size 10 \
-                #         --max_inspiration_search_steps 3 --background_question_id ${bkg_q_id} \
-                #         --baseline_type 0
+                echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
+                python -u hypothesis_generation.py --model_name ${model_name_gene} \
+                        --api_type 0 --api_key ${api_key} \
+                        --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey ${if_use_background_survey} \
+                        --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_${if_use_background_survey}_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
+                        --output_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_corpus_300_survey_${if_use_background_survey}_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
+                        --if_save 1 --if_load_from_saved 0 \
+                        --if_use_gdth_insp 1 --idx_round_of_first_step_insp_screening 0 \
+                        --num_mutations 3 --num_itr_self_refine 3  --num_self_explore_steps_each_line 3 --num_screening_window_size 12 --num_screening_keep_size 3 \
+                        --if_mutate_inside_same_bkg_insp 1 --if_mutate_between_diff_insp 1 --if_self_explore 0 --if_consider_external_knowledge_feedback_during_second_refinement 0 \
+                        --inspiration_ids -1  --recom_inspiration_ids -1 --recom_num_beam_size 10  --self_explore_inspiration_ids  --self_explore_num_beam_size 10 \
+                        --max_inspiration_search_steps 3 --background_question_id ${bkg_q_id} \
+                        --baseline_type 0
                         
                 echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
                 python -u evaluate.py --model_name ${model_name_eval} \
