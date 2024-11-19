@@ -232,7 +232,7 @@ def find_highest_scored_hypothesis_from_second_round(final_data_collection_path,
 
 def compare_similarity_between_inspiration_retrieval_and_similarity_retrieval(insp_file_path, simi_file_path, title_abstract_all_insp_literature_path="./title_abstract.json"):
     # dict_title_2_abstract: {'title': 'abstract', ...}
-    dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=title_abstract_all_insp_literature_path)     
+    title_abstract_collector, dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=title_abstract_all_insp_literature_path)     
     groundtruth_insp_titles = list(dict_title_2_abstract.keys())
 
     with open(insp_file_path, 'r') as f:

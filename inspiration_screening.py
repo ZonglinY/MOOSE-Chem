@@ -1,6 +1,6 @@
 import os, argparse, json
 from openai import OpenAI, AzureOpenAI
-from utils import instruction_prompts, load_chem_annotation, load_title_abstract, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation_while_loop
+from utils import instruction_prompts, load_chem_annotation, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation_while_loop
 
 
 # Coarse grained inspiration screening
@@ -10,7 +10,7 @@ class Screening(object):
         self.args = args
         self.custom_rq = custom_rq
         self.custom_bs = custom_bs
-        # set OpenAI API key
+        ## set OpenAI API key
         if args.api_type == 0:
             self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
             # self.client = OpenAI(api_key=args.api_key, base_url="https://api2.aigcbest.top/v1")
@@ -28,7 +28,7 @@ class Screening(object):
             )
         else:
             raise NotImplementedError
-        # Use the research question and background survey in Tomato-Chem or the custom ones from input
+        ## Load research background: Use the research question and background survey in Tomato-Chem or the custom ones from input
         if custom_rq == None and custom_bs == None:
             # annotated bkg research question and its annotated groundtruth inspiration paper titles
             self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question, self.args.if_use_background_survey)     
@@ -38,10 +38,10 @@ class Screening(object):
             self.bkg_q_list = [custom_rq]
             self.dict_bkg2survey = {custom_rq: custom_bs}
             self.dict_idx2bkg = {0: custom_rq} 
+        ## Load inspiration corpus (by default is the groundtruth inspiration papers and random high-quality papers)
+        # title_abstract_collector: [[title, abstract], ...]
         # dict_title_2_abstract: {'title': 'abstract', ...}
-        self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)   
-        # title and abstract of groundtruth inspiration papers and random high-quality papers：[[title, abstract], ...]
-        self.title_abstract_collector = load_title_abstract(args.title_abstract_all_insp_literature_path)
+        self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)   
 
 
     # The main function to run coarse-grained inspiration screening. Multiple rounds of screening for each background research question supported.
@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     # initialize custom_rq and custom_bs to text to use them for inference (but not those in the Tomato-Chem benchmark)
     custom_rq, custom_bs = None, None
-    
+
 
     # run Screening
     if os.path.exists(args.output_dir):

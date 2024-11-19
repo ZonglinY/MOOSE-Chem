@@ -213,22 +213,19 @@ def load_bkg_and_insp_from_chem_annotation(chem_annotation_path, background_ques
     
 
 # load the title and abstract of the groundtruth inspiration papers and random high-quality papers
-# title_abstract_collector：[[title, abstract], ...]
-def load_title_abstract(title_abstract_collector_path):
+# INPUT
+#   title_abstract_collector_path: the file path of the inspiration corpus
+#       It should contain a list of [title, abstract] pairs: [[title, abstract], ...]
+# OUTPUT
+#   title_abstract_collector: [[title, abstract], ...]
+#   dict_title_2_abstract: {'title': 'abstract', ...}
+def load_dict_title_2_abstract(title_abstract_collector_path):
+    ## load title_abstract_collector
     with open(title_abstract_collector_path, 'r') as f:
         # title_abstract_collector: [[title, abstract], ...]
         title_abstract_collector = json.load(f)
     print("Number of title-abstract pairs loaded: ", len(title_abstract_collector))
-    return title_abstract_collector
-
-
-# load the title and abstract of the groundtruth inspiration papers and random high-quality papers
-# title_abstract_collector_path: file path of the title_abstract.json
-# dict_title_2_abstract: {'title': 'abstract', ...}
-def load_dict_title_2_abstract(title_abstract_collector_path):
-    with open(title_abstract_collector_path, 'r') as f:
-        # title_abstract_collector: [[title, abstract], ...]
-        title_abstract_collector = json.load(f)
+    ## Transfer title_abstract_collector to dict_title_2_abstract
     # dict_title_2_abstract: {'title': 'abstract', ...}
     dict_title_2_abstract = {}
     for cur_item in title_abstract_collector:
@@ -236,7 +233,7 @@ def load_dict_title_2_abstract(title_abstract_collector_path):
             # print("Warning: seen before: ", cur_item[0])
             continue
         dict_title_2_abstract[cur_item[0]] = cur_item[1]
-    return dict_title_2_abstract
+    return title_abstract_collector, dict_title_2_abstract
 
 
 # inspiration_path: path to selected inspiration, eg, "coarse_inspiration_search_gpt4.json"

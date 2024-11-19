@@ -11,7 +11,7 @@ class HypothesisGenerationEA(object):
         self.args = args
         self.custom_rq = custom_rq
         self.custom_bs = custom_bs
-        # set OpenAI API key
+        ## set OpenAI API key
         if args.api_type == 0:
             self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
         elif args.api_type == 1:
@@ -28,7 +28,7 @@ class HypothesisGenerationEA(object):
             )
         else:
             raise NotImplementedError
-        # Use the research question and background survey in Tomato-Chem or the custom ones from input
+        ## Load research background: Use the research question and background survey in Tomato-Chem or the custom ones from input
         if custom_rq == None and custom_bs == None:
             # annotated bkg research question and its annotated groundtruth inspiration paper titles
             self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question, self.args.if_use_background_survey)   
@@ -38,10 +38,11 @@ class HypothesisGenerationEA(object):
             self.bkg_q_list = [custom_rq]
             self.dict_bkg2survey = {custom_rq: custom_bs}
             self.dict_idx2bkg = {0: custom_rq}   
-        # title and abstract of groundtruth inspiration papers and random high-quality papers
+        ## Load inspiration corpus (by default is the groundtruth inspiration papers and random high-quality papers)
+        # title_abstract_collector: [[title, abstract], ...]
         # dict_title_2_abstract: {'title': 'abstract', ...}
-        self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)
-        # load screened inspiration corpus
+        self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)
+        ## load the selected inspirations from the inspiration corpus (results from inspiration_screening.py)
         if args.if_use_gdth_insp == 0:
             # organized_insp: {'bq': [[title, reason], [title, reason], ...]}
             self.organized_insp, self.dict_bkg_insp2idx, self.dict_bkg_idx2insp = load_found_inspirations(inspiration_path=args.inspiration_dir, idx_round_of_first_step_insp_screening=args.idx_round_of_first_step_insp_screening)
