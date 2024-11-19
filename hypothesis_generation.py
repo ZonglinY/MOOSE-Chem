@@ -42,7 +42,7 @@ class HypothesisGenerationEA(object):
         # title_abstract_collector: [[title, abstract], ...]
         # dict_title_2_abstract: {'title': 'abstract', ...}
         self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)
-        ## load the selected inspirations from the inspiration corpus (results from inspiration_screening.py)
+        ## Load the selected inspirations from the inspiration corpus (results from inspiration_screening.py)
         if args.if_use_gdth_insp == 0:
             # organized_insp: {'bq': [[title, reason], [title, reason], ...]}
             self.organized_insp, self.dict_bkg_insp2idx, self.dict_bkg_idx2insp = load_found_inspirations(inspiration_path=args.inspiration_dir, idx_round_of_first_step_insp_screening=args.idx_round_of_first_step_insp_screening)

@@ -13,6 +13,7 @@ api_key="sk-"
 
 
 # # coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0
+# --title_abstract_all_insp_literature_path (inspiration corpus dir; if not provided, use the default one involving args.corpus_size)
 # python -u inspiration_screening.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx \
@@ -25,6 +26,7 @@ api_key="sk-"
 
 
 # # # hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0
+# --title_abstract_all_insp_literature_path (inspiration corpus dir; if not provided, use the default one involving args.corpus_size)
 # python -u hypothesis_generation.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
@@ -40,12 +42,14 @@ api_key="sk-"
 
 
 # # evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0
+# --title_abstract_all_insp_literature_path (inspiration corpus dir; if not provided, use the default one involving args.corpus_size)
 # python -u evaluate.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
 #         --hypothesis_dir ./Checkpoints/hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
 #         --output_dir ./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
 #         --if_save 1 --if_load_from_saved 0 \
+#         --if_with_gdth_hyp_annotation 1 \
 
 
 

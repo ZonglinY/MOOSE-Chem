@@ -47,19 +47,24 @@ class Evaluate(object):
             # ranked_hypothesis_collection: {backgroud_question: ranked_hypothesis, ...}
             #   ranked_hypothesis: [[hyp, ave_score, scores, core_insp_title, round_id, [first_round_mutation_id, second_round_mutation_id]], ...] (sorted by average score, in descending order)
             self.ranked_hypothesis_collection = self.hypothesis_ranking(self.final_data_collection)
-            # ranked_hypothesis_collection_with_matched_score: {backgroud_question: ranked_hypothesis_matched_score, ...}
-            #   ranked_hypothesis_matched_score: [[hyp, ave_score, scores, core_insp_title, round_id, [first_round_mutation_id, second_round_mutation_id], [matched_score, matched_score_reason]], ...] (here core_insp_title is the matched groundtruth inspiration paper title) (sorted by average score, in descending order)
-            self.ranked_hypothesis_collection_with_matched_score = self.automatic_evaluation_by_reference(self.ranked_hypothesis_collection)
+            if self.args.if_with_gdth_hyp_annotation == 1:
+                # ranked_hypothesis_collection_with_matched_score: {backgroud_question: ranked_hypothesis_matched_score, ...}
+                #   ranked_hypothesis_matched_score: [[hyp, ave_score, scores, core_insp_title, round_id, [first_round_mutation_id, second_round_mutation_id], [matched_score, matched_score_reason]], ...] (here core_insp_title is the matched groundtruth inspiration paper title) (sorted by average score, in descending order)
+                self.ranked_hypothesis_collection_with_matched_score = self.automatic_evaluation_by_reference(self.ranked_hypothesis_collection)
 
         ## analysis
-        # print rank based on the number of matched inspirations
-        # matched_insp_hyp_collection: [[cur_hyp, cur_gdth_hyp, cur_ave_score, cur_scores, cnt_matched_insp, cur_used_insps_set, cur_full_gdth_insps, cur_matched_score, cur_matched_score_reason, cur_round_id], ...] (sorted by cnt_matched_insp, in descending order)
-        self.matched_insp_hyp_collection = self.analyse_gene_hyp_closest_to_gdth_hyp(self.ranked_hypothesis_collection_with_matched_score)
+        if self.args.if_with_gdth_hyp_annotation == 1:
+            # print rank based on the number of matched inspirations
+            # matched_insp_hyp_collection: [[cur_hyp, cur_gdth_hyp, cur_ave_score, cur_scores, cnt_matched_insp, cur_used_insps_set, cur_full_gdth_insps, cur_matched_score, cur_matched_score_reason, cur_round_id], ...] (sorted by cnt_matched_insp, in descending order)
+            self.matched_insp_hyp_collection = self.analyse_gene_hyp_closest_to_gdth_hyp(self.ranked_hypothesis_collection_with_matched_score)
 
         ## save results
         if self.args.if_save == 1:
             with open(self.args.output_dir, 'w') as f:
-                json.dump([self.ranked_hypothesis_collection, self.ranked_hypothesis_collection_with_matched_score, self.matched_insp_hyp_collection], f)
+                if self.args.if_with_gdth_hyp_annotation == 1:
+                    json.dump([self.ranked_hypothesis_collection, self.ranked_hypothesis_collection_with_matched_score, self.matched_insp_hyp_collection], f)
+                else:
+                    json.dump([self.ranked_hypothesis_collection], f)
                 print("Results saved to ", self.args.output_dir)
 
 
@@ -215,6 +220,7 @@ if __name__ == '__main__':
     parser.add_argument("--if_save", type=int, default=0, help="whether save grouping results")
     parser.add_argument("--if_load_from_saved", type=int, default=0, help="whether load data that is previous to inter-EA recombination; when used, the framework will load data from output_dir, instead of generating from scratch; mainly used for debugging and improving inter-EA recombination") 
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
+    parser.add_argument("--if_with_gdth_hyp_annotation", type=int, default=1, help="whether we have groundtruth hypothesis annotation to calculate the matched score and following analysis. If we don't have groundtruth hypothesis annotation, here we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")
     args = parser.parse_args()
 
     assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
@@ -222,9 +228,14 @@ if __name__ == '__main__':
     assert args.if_use_strict_survey_question in [0, 1]
     assert args.if_save in [1]
     assert args.if_load_from_saved in [0, 1]
+    assert args.if_with_gdth_hyp_annotation in [0, 1]
     # change args.title_abstract_all_insp_literature_path to the default value if it is not assigned by users
     if args.title_abstract_all_insp_literature_path == "":
         args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
+    else:
+        # if not use the official inspiration corpus, we assume there would not be any groundtruth annotations for the hypothesis; else it's possible for both cases
+        print("INFO: no groundtruth hypothesis annotation is provided, so we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")
+        assert args.if_with_gdth_hyp_annotation == 0
     print("args: ", args)
 
     # skip if the output_dir already exists
