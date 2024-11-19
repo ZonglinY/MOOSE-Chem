@@ -884,7 +884,7 @@ if __name__ == "__main__":
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
     parser.add_argument("--if_use_background_survey", type=int, default=1, help="whether use background survey. 0: not use (replace the survey as 'Survey not provided. Please overlook the survey.'); 1: use")
     parser.add_argument("--if_use_strict_survey_question", type=int, default=1, help="whether to use the strict version of background survey and background question. strict version means the background should not have any close information to inspirations and the hypothesis, even if the close information is a commonly used method in that particular background question domain.")
-    parser.add_argument("--title_abstract_all_insp_literature_path", type=str, default="./title_abstract.json", help="store title and abstract of groundtruth inspiration papers and random high-quality papers")
+    parser.add_argument("--title_abstract_all_insp_literature_path", type=str, default="", help="store title and abstract of the inspiration corpus; Should be a json file in a format of [[title, abstract], ...]; It will be automatically assigned with a default value if it is not assigned by users. The default value is './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size). (The default value is the groundtruth inspiration papers for the Tomato-Chem Benchmark and random high-quality papers)")
     parser.add_argument("--inspiration_dir", type=str, default="./Checkpoints/coarse_inspiration_search_gpt4.json;", help="store coarse-grained inspiration screening results")
     parser.add_argument("--output_dir", type=str, default="./Checkpoints/hypothesis_generation_results.json")
     parser.add_argument("--if_save", type=int, default=0, help="whether save grouping results")
@@ -946,9 +946,9 @@ if __name__ == "__main__":
     assert args.num_screening_keep_size in [3]
     assert args.if_use_gdth_insp in [0, 1]
     assert args.if_consider_external_knowledge_feedback_during_second_refinement in [0, 1]
-    # change args.title_abstract_all_insp_literature_path
-    assert args.title_abstract_all_insp_literature_path == "./title_abstract.json"
-    args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
+    # change args.title_abstract_all_insp_literature_path to the default value if it is not assigned by users
+    if args.title_abstract_all_insp_literature_path == "":
+        args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
     assert args.baseline_type in [0, 1, 2, 3]
     if args.baseline_type not in [0, 3]:
         print("Warning: Running baseline {}..".format(args.baseline_type))
