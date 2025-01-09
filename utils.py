@@ -347,6 +347,8 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
             model = "llama-3.1-70b"
         elif model_name == "llama31405b":
             model = "llama-3.1-405b"
+        elif model_name == "gpt-4o-mini":
+            model = "gpt-4o-mini"
         else:
             raise NotImplementedError
     elif api_type == 1:
@@ -430,7 +432,6 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
 
 def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, api_type, model_name="gpt-4o-mini"):
     assert isinstance(gene, str), print("type(gene): ", type(gene))
-    assert model_name == "gpt-4o-mini", print("model_name: ", model_name)
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
     gene = re.sub("[#*]", "", gene).strip()
     assert len(template) == 2, print("template: ", template)
@@ -468,10 +469,13 @@ def get_structured_generation_from_raw_generation(gene, template):
         gene_split = gene.split('\n')
         # if the gene is not starting with the title, the second paragraph in gene_split might be the title
         gene_split = [item for item in gene_split if item.strip() != ""]
-        assert len(gene_split) >= 2
-        if gene_split[1].startswith(template[0]):
-            gene = '\n'.join(gene_split[1:])
-        assert gene.startswith(template[0])
+        assert len(gene_split) >= 2, print("gene_split: ", gene_split)
+        # iterate to find the first template[0] in gene_split
+        for id_lind, line in enumerate(gene_split):
+            if gene_split[id_lind].startswith(template[0]):
+                gene = '\n'.join(gene_split[id_lind:])
+                break
+        assert gene.startswith(template[0]), print("gene: ", gene)
     # structured_gene: [[title, reason], [title, reason], ...]
     structured_gene = []
     gene_split = gene.split(template[0])
