@@ -384,7 +384,7 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
 #   llm inference with the prompt + guarantee to reply a structured generation accroding to the template (guarantee by the while loop)
 #   gene_format_constraint: [id of structured gene to comply with the constraint, constraint (['Yes', 'No'], where the content in the id of structured gene should be inside the constraint)]
 #   if_only_return_one_structured_gene_component: True or False; most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]]). When it is True, this function will only return the first element of structured_gene. If it is set to true and structured_gene has more than one component, a warning will be raised
-def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, api_type=0):
+def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, api_type=0, if_structure_organized_by_llm=False):
     # assertions
     assert if_structured_generation in [True, False]
     if if_structured_generation:
@@ -397,19 +397,22 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
             # structured_gene
             if if_structured_generation:
                 # structured_gene: [[title, reason], [title, reason], ...]
-                structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
+                if if_structure_organized_by_llm == True:
+                    # print("Information to be extracted by an LLM from the LLM's generation")
+                    structured_gene = get_structured_generation_from_raw_generation_by_llm(generation, template=template, client=client, temperature=temperature, api_type=api_type, model_name="gpt-4o-mini")
+                else:
+                    # print("Using a template matching method to extract information from the LLM's generation")
+                    structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
                 if gene_format_constraint != None:
                     assert len(gene_format_constraint) == 2, print("gene_format_constraint: ", gene_format_constraint)
                     # we use structured_gene[0] here since most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]])
                     assert structured_gene[0][gene_format_constraint[0]].strip() in gene_format_constraint[1], print("structured_gene[0][gene_format_constraint[0]].strip(): {}; gene_format_constraint[1]: {}".format(structured_gene[0][gene_format_constraint[0]].strip(), gene_format_constraint[1]))
             break
-        except AssertionError as e:
+        except Exception as e:
             # if the format of feedback is wrong, try again in the while loop
             # print("generation: ", generation)
-            print("AssertionError: {}, try again..".format(repr(e)))
-        except:
-            # if the generation is not successful, try again in the while loop
-            print("Generation failed, try again..")
+            if_structure_organized_by_llm = True
+            print("AssertionError: {}, set if_structure_organized_by_llm to {} and try again..".format(repr(e), if_structure_organized_by_llm))
             
 
     # structured_gene
@@ -422,6 +425,35 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
             return structured_gene
     else:
         return generation
+
+
+
+def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, api_type, model_name="gpt-4o-mini"):
+    assert isinstance(gene, str), print("type(gene): ", type(gene))
+    assert model_name == "gpt-4o-mini", print("model_name: ", model_name)
+    # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
+    gene = re.sub("[#*]", "", gene).strip()
+    assert len(template) == 2, print("template: ", template)
+    prompt = "You are a helpful assistant.\nPlease help to organize the following small passage into a structured format, following the template. Please try to copy from the original passage and try not to miss any details from the passage. \n\nThe passage is: \n" + gene + f"\n\nThe template is: \n{template[0]} \n{template[1]} \n."
+    # print("prompt: ", prompt)
+    
+    # while loop to make sure there will be one successful generation
+    while True:
+        try:
+            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+            # print("generation (in): ", generation)
+            structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
+            # print("structured_gene (in): ", structured_gene)
+            break
+        except Exception as e:
+            temperature = 1.5
+            # if the format of feedback is wrong, try again in the while loop
+            print("generation (in): ", generation)
+            print("template: ", template)
+            print("Exception (in): {}, try again..".format(repr(e)))
+            print(f"update temperature to {temperature} in case new generation can be successful..")
+    # print("structured_gene: ", structured_gene)
+    return structured_gene
 
 
 
