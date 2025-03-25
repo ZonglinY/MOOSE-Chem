@@ -67,6 +67,8 @@ def instruction_prompts(module_name):
         prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into four steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Thirdly it's about finding extra knowledge that work along with the inspiration can lead to a more complete hypothesis. Finally it's hypothesis generation based on the background research question, the found inspirations, and the extra knowledge. \nNow we have identified a good research question, a core inspiration in a literature for this research question, and extra knowledge. With them, we have already generated a preliminary research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe extra knowledge is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", "\n\nNow you have seen the background research question, the core inspiration, the extra knowledge, the preliminary hypothesis, and the feedbacks from domain experts. Please try to refine the hypothesis based on the feedbacks. (response format: 'Refined Hypothesis: \nReasoning Process:\n')"]
     elif module_name == "eval_matched_score":
         prompts = ["You are helping to evaluate the quality of a proposed research hypothesis in Chemistry by a phd student. The groundtruth hypothesis will also be provided to compare. Here we mainly focus on whether the proposed hypothesis has covered the key points in terms of the methodology in the groundtruth hypothesis. You will also be given a summary of the key points in the methodology of the groundtruth hypothesis for reference. Please note that for the proposed hypothesis to cover one key point, it is not necessary to explicitly mention the name of the key point, but might also can integrate the key point implicitly in the proposed method. The evaluation criteria is called 'Matched score', which is in a 6-point Likert scale (from 5 to 0). Particularly, 5 points mean that the proposed hypothesis (1) covers all the key points and leverage them similarly as in the methodology of the groundtruth hypothesis, and (2) does not contain any extra key point that has apparent flaws; 4 points mean that the proposed hypothesis (1) covers all the key points (or at least three key points) and leverage them similarly as in the methodology of the groundtruth hypothesis, (2) but also with extra key points that have apparent flaws; 3 points mean that the proposed hypothesis (1) covers at least two key points and leverage them similarly as in the methodology of the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, (3) might or might not contain extra key points; 2 points mean that the proposed hypothesis (1) covers at least one key point in the methodology of the groundtruth hypothesis, and leverage it similarly as in the methodology of groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; 1 point means that the proposed hypothesis (1) covers at least one key point in the methodology of the groundtruth hypothesis, (2) but is used differently as in the methodology of groundtruth hypothesis, and (3) might or might not contain extra key points; 0 point means that the proposed hypothesis does not cover any key point in the methodology of the groundtruth hypothesis at all. Please note that the total number of key points in the groundtruth hypothesis might be less than three, so that multiple points can be given. E.g., there's only one key point in the groundtruth hypothesis, and the proposed hypothesis covers the one key point, it's possible to give 2 points, 4 points, and 5 points. In this case, we should choose score from 4 points and 5 points, depending on the existence and quality of extra key points. 'Leveraging a key point similarly as in the methodology of the groundtruth hypothesis' means that in the proposed hypothesis, the same (or very related) concept (key point) is used in a similar way with a similar goal compared to the groundtruth hypothesis (not necessarily for the proposed hypothesis to be exactly the same with the groudtruth hypothesis to be classified as 'similar'). When judging whether an extra key point has apparent flaws, you should use your own knowledge to judge, but rather than to rely on the count number of pieces of extra key point to judge. \nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis. \nThe proposed hypothesis is: ", "\n\nThe groundtruth hypothesis is: ", "\n\nThe key points in the groundtruth hypothesis are: ", "\n\nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis, and give a score. (response format: 'Matched score: \nReason:\n')"]
+    elif module_name == "eval_matched_score_hard":
+        prompts = ["You are helping to evaluate the quality of a proposed research hypothesis by a phd student. The groundtruth hypothesis will also be provided to compare. Here we mainly focus on whether the proposed hypothesis has covered the key points of the groundtruth hypothesis. You will also be given a summary of the key points in the groundtruth hypothesis for reference. The evaluation criteria is called 'Matched score', which is in a 6-point Likert scale (from 5 to 0). Particularly, \n5 points mean that the proposed hypothesis (1) covers three key points (or covers all the key points) in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, and (2) does not contain any extra key point(s) that is redundant, unnecessary, unhelpful, or harmful; \n4 points mean that the proposed hypothesis (1) covers three key points (or covers all the key points) in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, and (2) but also contain extra key point(s) that is redundant, unnecessary, unhelpful, or harmful; \n3 points mean that the proposed hypothesis (1) covers two key points in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; \n2 points mean that the proposed hypothesis (1) covers one key point in the groundtruth hypothesis, and leverage it nearly identically as in the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; \n1 point means that the proposed hypothesis (1) covers at least one key point in the groundtruth hypothesis, but all the covered key point(s) are used differently as in the groundtruth hypothesis, and (2) might or might not contain extra key points; \n0 point means that the proposed hypothesis does not cover any key point in the groundtruth hypothesis at all. \nUsually total the number of key points a groundtruth hypothesis contain is less than or equal to three. Please note that the total number of key points in the groundtruth hypothesis might be less than three, so that multiple points can be given. E.g., there's only one key point in the groundtruth hypothesis, and the proposed hypothesis covers the one key point nearly identically, it's possible to give 2 points, 4 points, and 5 points. In this case, we should choose score from 4 points and 5 points, depending on the existence and quality of extra key points. 'Leveraging a key point nearly identically as in the groundtruth hypothesis means that in the proposed hypothesis, the same (or very related) concept (key point) is used in a very similar way with a very similar goal compared to the groundtruth hypothesis. \nWhen judging whether an extra key point has apparent flaws, you should use your own knowledge and understanding of that discipline to judge, rather than only relying on the count number of pieces of extra key point to judge. \nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis. \nThe proposed hypothesis is: ", "\n\nThe groundtruth hypothesis is: ", "\n\nThe key points in the groundtruth hypothesis are: ", "\n\nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis, and give a score. (response format: 'Matched score: \nReason:\n')"]
     else:
         raise NotImplementedError
     
@@ -326,48 +328,14 @@ def load_coarse_grained_hypotheses(coarse_grained_hypotheses_path):
 
 # Call Openai API,k input is prompt, output is response
 # model: by default is gpt3.5, can also use gpt4
-# api_type: 0 for OpenAI, 1 for Azure OpenAI
-def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
+def llm_generation(prompt, model_name, client, temperature=1.0):
     # which model to use
     if_api_completed = False
-    if api_type == 0:
-        if model_name == "chatgpt":
-            model = 'gpt-3.5-turbo'
-        elif model_name == "chatgpt16k":
-            model = 'gpt-3.5-turbo-16k'
-        elif model_name == "gpt4":
-            model = 'gpt-4o-2024-08-06'
-        elif model_name == "claude35S":
-            model = 'claude-3-5-sonnet-20240620'
-        elif model_name == "gemini15P":
-            model = "gemini-1.5-pro"
-        elif model_name == "llama318b":
-            model = "llama-3.1-8b"
-        elif model_name == "llama3170b":
-            model = "llama-3.1-70b"
-        elif model_name == "llama31405b":
-            model = "llama-3.1-405b"
-        elif model_name == "gpt-4o-mini":
-            model = "gpt-4o-mini"
-        else:
-            raise NotImplementedError
-    elif api_type == 1:
-        if model_name == "gpt4":
-            model = "gpt-4o"
-        else:
-            raise NotImplementedError
-    elif api_type == 2:
-        if model_name == "gpt4":
-            model = "GPT4o"
-        else:
-            raise NotImplementedError
-    else:
-        raise NotImplementedError
     # start inference util we get generation
     while if_api_completed == False:
         try:
             completion = client.chat.completions.create(
-            model=model,
+            model=model_name,
             temperature=temperature,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -386,7 +354,7 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
 #   llm inference with the prompt + guarantee to reply a structured generation accroding to the template (guarantee by the while loop)
 #   gene_format_constraint: [id of structured gene to comply with the constraint, constraint (['Yes', 'No'], where the content in the id of structured gene should be inside the constraint)]
 #   if_only_return_one_structured_gene_component: True or False; most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]]). When it is True, this function will only return the first element of structured_gene. If it is set to true and structured_gene has more than one component, a warning will be raised
-def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, api_type=0, if_structure_organized_by_llm=False):
+def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, restructure_output_model_name="gpt-4o-mini"):
     # assertions
     assert if_structured_generation in [True, False]
     if if_structured_generation:
@@ -395,16 +363,17 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
     # while loop to make sure there will be one successful generation
     while True:
         try:
-            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+            generation = llm_generation(prompt, model_name, client, temperature=temperature)
             # structured_gene
             if if_structured_generation:
                 # structured_gene: [[title, reason], [title, reason], ...]
-                if if_structure_organized_by_llm == True:
-                    # print("Information to be extracted by an LLM from the LLM's generation")
-                    structured_gene = get_structured_generation_from_raw_generation_by_llm(generation, template=template, client=client, temperature=temperature, api_type=api_type, model_name="gpt-4o-mini")
-                else:
+                # try with template matching first, if not work, try llm to formulate the generation according to the template; if not work again, then probably it is the problem of the original generation, then try llm_generation() again
+                try:
                     # print("Using a template matching method to extract information from the LLM's generation")
                     structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
+                except:
+                    # print("Information to be extracted by an LLM from the LLM's generation")
+                    structured_gene = get_structured_generation_from_raw_generation_by_llm(generation, template=template, client=client, temperature=temperature, model_name=restructure_output_model_name)
                 if gene_format_constraint != None:
                     assert len(gene_format_constraint) == 2, print("gene_format_constraint: ", gene_format_constraint)
                     # we use structured_gene[0] here since most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]])
@@ -413,8 +382,7 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
         except Exception as e:
             # if the format of feedback is wrong, try again in the while loop
             # print("generation: ", generation)
-            if_structure_organized_by_llm = True
-            print("AssertionError: {}, set if_structure_organized_by_llm to {} and try again..".format(repr(e), if_structure_organized_by_llm))
+            print("AssertionError: {}, try again..".format(repr(e)))
             
 
     # structured_gene
@@ -430,31 +398,38 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
 
 
 
-def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, api_type, model_name="gpt-4o-mini"):
+def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name="gpt-4o-mini"):
     assert isinstance(gene, str), print("type(gene): ", type(gene))
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
     gene = re.sub("[#*]", "", gene).strip()
     assert len(template) == 2, print("template: ", template)
-    prompt = "You are a helpful assistant.\nPlease help to organize the following small passage into a structured format, following the template. Please try to copy from the original passage and try not to miss any details from the passage. \n\nThe passage is: \n" + gene + f"\n\nThe template is: \n{template[0]} \n{template[1]} \n."
+    # In your answer, please only mention the words in the template when use it as a template. For example, if the template is ['Hypothesis:', 'Reasoning Process:'], then your answer should not contain 'Analysis of the Hypothesis:', since it also contain 'Hypothesis:'.
+    # Whenever there are information in the passage related to the template, please restructure the information into the template format;
+    prompt = "You are a helpful assistant.\nPlease help to organize the following passage into a structured format, following the template. When restructure the passage with the template, please try not to rephrase but to use the original information in the passage (to avoid information distortion). If the template is only about a subset of information in the passage, you can extract only that subset of information to fill the template. If there is no such information for the template in the passage, please still output the exact template first, and fill the content for the template as 'None'. \n\nThe passage is: \n" + gene + f"\n\nThe template is: \n{template[0]} \n{template[1]} \n. Now, please restructure the passage strictly with the template (literally strictly, e.g., the case style of the template should also remain the same when used to restructure the passage)."
     # print("prompt: ", prompt)
     
     # while loop to make sure there will be one successful generation
     while True:
         try:
-            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+            generation = llm_generation(prompt, model_name, client, temperature=temperature)
             # print("generation (in): ", generation)
             structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
             # print("structured_gene (in): ", structured_gene)
             break
         except Exception as e:
-            temperature = 1.5
+            if temperature < 1.5:
+                temperature += 0.25
+            if temperature >= 0.7:
+                model_name = "gpt-4o"
             # if the format of feedback is wrong, try again in the while loop
             print("generation (in): ", generation)
             print("template: ", template)
             print("Exception (in): {}, try again..".format(repr(e)))
-            print(f"update temperature to {temperature} in case new generation can be successful..")
+            print(f"update temperature to {temperature} and use {model_name} for extraction in case new generation can be successful..")
     # print("structured_gene: ", structured_gene)
     return structured_gene
+
+
 
 
 
@@ -465,17 +440,26 @@ def get_structured_generation_from_raw_generation(gene, template):
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
     gene = re.sub("[#*]", "", gene).strip()
     assert len(template) == 2, print("template: ", template)
+    # # some times generation will capitalize the first letter of the template, so we use the lower case for both generation and template to match: not adopting it since it might influence chemistry terms (e.g., Fe2+ -> fe2+)
+    # gene = gene.lower()
+    # template = [item.lower() for item in template]
+    # the template might not appear in the first sentence of the gene, get rid of noise sentences before the first template[0]
     if not gene.startswith(template[0]):
         gene_split = gene.split('\n')
         # if the gene is not starting with the title, the second paragraph in gene_split might be the title
         gene_split = [item for item in gene_split if item.strip() != ""]
         assert len(gene_split) >= 2, print("gene_split: ", gene_split)
         # iterate to find the first template[0] in gene_split
-        for id_lind, line in enumerate(gene_split):
-            if gene_split[id_lind].startswith(template[0]):
-                gene = '\n'.join(gene_split[id_lind:])
+        for id_line, line in enumerate(gene_split):
+            if gene_split[id_line].find(template[0]) > 0 and gene_split[id_line].find(template[0]) < 15:
+                gene_split_split = gene_split[id_line].split(template[0])
+                assert len(gene_split_split) == 2, print("gene_split_split: ", gene_split_split)
+                gene_split[id_line] = template[0] + gene_split_split[1]
+            if gene_split[id_line].startswith(template[0]):
+                gene = '\n'.join(gene_split[id_line:])
                 break
-        assert gene.startswith(template[0]), print("gene: ", gene)
+        # assert gene.startswith(template[0]), print("gene: ", gene)
+        assert gene.startswith(template[0])
     # structured_gene: [[title, reason], [title, reason], ...]
     structured_gene = []
     gene_split = gene.split(template[0])
@@ -486,6 +470,17 @@ def get_structured_generation_from_raw_generation(gene, template):
         if cur_gs == "":
             continue
         cur_gs_split = cur_gs.split(template[1])
+        # deal with unexpected situations
+        if len(cur_gs_split) > 2:
+            # if there are more than one template[1] in cur_gs, we prefer the one with prefix as '\n' (since it matches more as the designed format)
+            cur_gs_split = cur_gs.split('\n' + template[1])
+            # by preferring the one with prefix as '\n' still do not work, so we simply concatenate the rest of the elements other than the first element
+            if len(cur_gs_split) > 2:
+                cur_gs_split = [cur_gs_split[0], '\n'.join(cur_gs_split[1:])]
+            # in case none of the template[1] is with prefix as '\n'
+            elif len(cur_gs_split) == 1:
+                cur_gs_split = cur_gs.split(template[1])
+                cur_gs_split = [cur_gs_split[0], '\n'.join(cur_gs_split[1:])]
         # assert len(cur_gs_split) == 2, print("cur_gs_split: ", cur_gs_split)
         assert len(cur_gs_split) == 2
         # strip every elements in cur_gs_split

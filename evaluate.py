@@ -7,18 +7,14 @@ class Evaluate(object):
 
     def __init__(self, args) -> None:
         self.args = args
-        # set OpenAI API key
+        ## Set API client
+        # openai client
         if args.api_type == 0:
-            self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
+            self.client = OpenAI(api_key=args.api_key, base_url=args.base_url)
+        # azure client
         elif args.api_type == 1:
             self.client = AzureOpenAI(
-                azure_endpoint = "https://gd-sweden-gpt4vision.openai.azure.com/", 
-                api_key=args.api_key,  
-                api_version="2024-06-01"
-            )
-        elif args.api_type == 2:
-            self.client = AzureOpenAI(
-                azure_endpoint = "https://declaregpt4.openai.azure.com/", 
+                azure_endpoint = args.base_url, 
                 api_key=args.api_key,  
                 api_version="2024-06-01"
             )
@@ -160,7 +156,7 @@ class Evaluate(object):
         prompts = instruction_prompts('eval_matched_score')
         full_prompt = prompts[0] + gene_hyp + prompts[1] + gold_hyp + prompts[2] + keypoints + prompts[3]
         # structured_gene: [matched_score, reason]
-        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Matched score:', 'Reason:'], temperature=0.0, api_type=self.args.api_type)
+        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Matched score:', 'Reason:'], temperature=0.0)
         return structured_gene
         
 
@@ -210,8 +206,9 @@ class Evaluate(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hypothesis evaluation by reference')
     parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b/llama3170b/llama31405b")
-    parser.add_argument("--api_type", type=int, default=1, help="1: use Dr. Xie's API; 0: use api from shanghai ai lab")
+    parser.add_argument("--api_type", type=int, default=1, help="0: openai's API toolkit; 1: azure's API toolkit")
     parser.add_argument("--api_key", type=str, default="")
+    parser.add_argument("--base_url", type=str, default="https://api.claudeshop.top/v1", help="base url for the API")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
     parser.add_argument("--if_use_strict_survey_question", type=int, default=1, help="whether to use the strict version of background survey and background question. strict version means the background should not have any close information to inspirations and the hypothesis, even if the close information is a commonly used method in that particular background question domain.")
     parser.add_argument("--title_abstract_all_insp_literature_path", type=str, default="", help="store title and abstract of the inspiration corpus; Should be a json file in a format of [[title, abstract], ...]; It will be automatically assigned with a default value if it is not assigned by users. The default value is './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size). (The default value is the groundtruth inspiration papers for the Tomato-Chem Benchmark and random high-quality papers)")
@@ -224,7 +221,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
-    assert args.api_type in [0, 1, 2]
+    assert args.api_type in [0, 1]
     assert args.if_use_strict_survey_question in [0, 1]
     assert args.if_save in [1]
     assert args.if_load_from_saved in [0, 1]

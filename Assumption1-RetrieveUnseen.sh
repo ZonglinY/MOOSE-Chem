@@ -9,12 +9,13 @@
 
 
 api_key="sk-"
+base_url="https://api.claudeshop.top/v1"
 model_name_insp_retrieval="llama3170b"
 
 
 ## Define the base command, that is shared across all experiments
 base_command="python -u inspiration_screening.py --model_name ${model_name_insp_retrieval} \
-        --api_type 0 --api_key ${api_key} \
+        --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx \
         --output_dir ./Checkpoints/coarse_inspiration_search"
 

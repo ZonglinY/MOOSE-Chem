@@ -7,18 +7,14 @@ import numpy as np
 class GroundTruth_Hyp_Ranking(object):
     def __init__(self, args) -> None:
         self.args = args
-        # set OpenAI API key
+        ## Set API client
+        # openai client
         if args.api_type == 0:
-            self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
+            self.client = OpenAI(api_key=args.api_key, base_url=args.base_url)
+        # azure client
         elif args.api_type == 1:
             self.client = AzureOpenAI(
-                azure_endpoint = "https://gd-sweden-gpt4vision.openai.azure.com/", 
-                api_key=args.api_key,
-                api_version="2024-06-01"
-            )
-        elif args.api_type == 2:
-            self.client = AzureOpenAI(
-                azure_endpoint = "https://declaregpt4.openai.azure.com/", 
+                azure_endpoint = args.base_url, 
                 api_key=args.api_key,  
                 api_version="2024-06-01"
             )
@@ -42,7 +38,7 @@ class GroundTruth_Hyp_Ranking(object):
         # generation
         while True:
             try:
-                score_text = llm_generation(full_prompt, self.args.model_name, self.client, api_type=self.args.api_type)
+                score_text = llm_generation(full_prompt, self.args.model_name, self.client)
                 score_collection, score_reason_collection, if_successful = pick_score(score_text, full_prompt)
                 assert if_successful == True
                 break
@@ -178,8 +174,9 @@ class GroundTruth_Hyp_Ranking(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Hypothesis generation')
     parser.add_argument("--model_name", type=str, default="claude35S", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P")
-    parser.add_argument("--api_type", type=int, default=0, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
+    parser.add_argument("--api_type", type=int, default=1, help="0: openai's API toolkit; 1: azure's API toolkit")
     parser.add_argument("--api_key", type=str, default="")
+    parser.add_argument("--base_url", type=str, default="https://api.claudeshop.top/v1", help="base url for the API")
     parser.add_argument("--chem_annotation_path", type=str, default="./Data/chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
     parser.add_argument("--if_use_background_survey", type=int, default=1, help="whether use background survey. 0: not use (replace the survey as 'Survey not provided. Please overlook the survey.'); 1: use")
     parser.add_argument("--if_use_strict_survey_question", type=int, default=1, help="whether to use the strict version of background survey and background question. strict version means the background should not have any close information to inspirations and the hypothesis, even if the close information is a commonly used method in that particular background question domain.")
@@ -188,6 +185,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, default="./Checkpoints/groundtruth_hypothesis_automatic_scores_four_aspects.json")
     args = parser.parse_args()
 
+    assert args.api_type in [0, 1]
     assert args.if_save in [0, 1]
     if not os.path.exists(args.output_dir):
         gtr = GroundTruth_Hyp_Ranking(args)

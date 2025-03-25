@@ -10,19 +10,14 @@ class Screening(object):
         self.args = args
         self.custom_rq = custom_rq
         self.custom_bs = custom_bs
-        ## set OpenAI API key
+        ## Set API client
+        # openai client
         if args.api_type == 0:
-            self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
-            # self.client = OpenAI(api_key=args.api_key, base_url="https://api2.aigcbest.top/v1")
+            self.client = OpenAI(api_key=args.api_key, base_url=args.base_url)
+        # azure client
         elif args.api_type == 1:
             self.client = AzureOpenAI(
-                azure_endpoint = "https://gd-sweden-gpt4vision.openai.azure.com/", 
-                api_key=args.api_key,  
-                api_version="2024-06-01"
-            )
-        elif args.api_type == 2:
-            self.client = AzureOpenAI(
-                azure_endpoint = "https://declaregpt4.openai.azure.com/", 
+                azure_endpoint = args.base_url, 
                 api_key=args.api_key,  
                 api_version="2024-06-01"
             )
@@ -143,7 +138,7 @@ class Screening(object):
                 full_prompt = prompts[0] + bkg_research_question + prompts[1] + backgroud_survey + prompts[2] + cur_title_abstract_pairs_prompt + prompts[3]
                 # cur_structured_gene: [[Title, Reason], [Title, Reason], ...]
                 # Use zero temperature to escavate heuristics in the model the most 
-                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, api_type=self.args.api_type)  
+                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0)  
             else:
                 cur_structured_gene = [[cur_title_abstract_pairs[cur_ta_id][0], "Less than num_screening_keep_size, so keep them without screening."] for cur_ta_id in range(len(cur_title_abstract_pairs))]
             # update next_round_inspiration_candidates
@@ -211,8 +206,9 @@ class Screening(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b/llama3170b/llama31405b")
-    parser.add_argument("--api_type", type=int, default=1, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
+    parser.add_argument("--api_type", type=int, default=1, help="0: openai's API toolkit; 1: azure's API toolkit")
     parser.add_argument("--api_key", type=str, default="")
+    parser.add_argument("--base_url", type=str, default="https://api.claudeshop.top/v1", help="base url for the API")
     parser.add_argument("--num_screening_window_size", type=int, default=10, help="how many abstract we use in a single inference of llm to screen inspiration candidates")
     parser.add_argument("--num_screening_keep_size", type=int, default=3, help="how many abstract we keep during one screening window")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx")
@@ -228,7 +224,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
-    assert args.api_type in [0, 1, 2]
+    assert args.api_type in [0, 1]
     # assert args.if_save in [0, 1]
     assert args.num_screening_window_size >= 10
     # currently cannot adjust corresponding prompts by args.num_screening_keep_size (default prompt is three, else need to change the prompt)

@@ -11,18 +11,14 @@ class HypothesisGenerationEA(object):
         self.args = args
         self.custom_rq = custom_rq
         self.custom_bs = custom_bs
-        ## set OpenAI API key
+        ## Set API client
+        # openai client
         if args.api_type == 0:
-            self.client = OpenAI(api_key=args.api_key, base_url="https://api.claudeshop.top/v1")
+            self.client = OpenAI(api_key=args.api_key, base_url=args.base_url)
+        # azure client
         elif args.api_type == 1:
             self.client = AzureOpenAI(
-                azure_endpoint = "https://gd-sweden-gpt4vision.openai.azure.com/", 
-                api_key=args.api_key,
-                api_version="2024-06-01"
-            )
-        elif args.api_type == 2:
-            self.client = AzureOpenAI(
-                azure_endpoint = "https://declaregpt4.openai.azure.com/", 
+                azure_endpoint = args.base_url, 
                 api_key=args.api_key,  
                 api_version="2024-06-01"
             )
@@ -290,7 +286,7 @@ class HypothesisGenerationEA(object):
         # generation
         # structured_extra_knowledge: [[Title0, Reason0], [Title1, Reason1], ...]
         # we might want the temperature for inspiration retrieval to be zero, for better reflecting heuristics & stable performance
-        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, api_type=self.args.api_type)
+        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0)
         structured_extra_knowledge = [[recover_generated_title_to_exact_version_of_title(list(self.dict_title_2_abstract.keys()), item[0]), item[1]] for item in structured_extra_knowledge]
         # selected_titles: [Title0, Title1, ...]
         selected_titles = [item[0] for item in structured_extra_knowledge]
@@ -634,7 +630,7 @@ class HypothesisGenerationEA(object):
                 other_mutations_prompt += cur_other_mutation_prompt
             full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + input_hyp + prompts[4] + other_mutations_prompt + prompts[5]
         # structured_extra_knowledge: [Yes/No, extra_knowledge/reason for it is complete]
-        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['If need extra knowledge:', 'Details:'], gene_format_constraint=[0, ['Yes', 'No']], if_only_return_one_structured_gene_component=True, api_type=self.args.api_type)
+        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['If need extra knowledge:', 'Details:'], gene_format_constraint=[0, ['Yes', 'No']], if_only_return_one_structured_gene_component=True)
         if structured_extra_knowledge[0] == 'No':
             hypothesis_collection = [structured_extra_knowledge[1], None, None, None, None]
             return structured_extra_knowledge[0], hypothesis_collection
@@ -643,18 +639,18 @@ class HypothesisGenerationEA(object):
         assert len(prompts) == 6
         full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + input_hyp + prompts[4] + structured_extra_knowledge[1] + prompts[5]
         # structured_gene: [hyp, reasoning process]
-        sturctured_hyp_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Hypothesis:', 'Reasoning Process:'], if_only_return_one_structured_gene_component=True, api_type=self.args.api_type)
+        sturctured_hyp_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Hypothesis:', 'Reasoning Process:'], if_only_return_one_structured_gene_component=True)
         ## provide feedback to hypothesis
         prompts = instruction_prompts("provide_feedback_to_hypothesis_four_aspects_with_extra_knowledge")
         assert len(prompts) == 6
         full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + structured_extra_knowledge[1] + prompts[4] + sturctured_hyp_gene[0] + prompts[5]
-        feedback = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=False, api_type=self.args.api_type)
+        feedback = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=False)
         ## hypothesis refinement
         prompts = instruction_prompts("hypothesis_refinement_with_feedback_with_extra_knowledge")
         assert len(prompts) == 7
         full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + structured_extra_knowledge[1] + prompts[4] + sturctured_hyp_gene[0] + prompts[5] + feedback + prompts[6]
         # structured_gene: [hyp, reasoning process]
-        sturctured_hyp_gene_refined = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Refined Hypothesis:', 'Reasoning Process:'], if_only_return_one_structured_gene_component=True, api_type=self.args.api_type)
+        sturctured_hyp_gene_refined = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Refined Hypothesis:', 'Reasoning Process:'], if_only_return_one_structured_gene_component=True)
         # hypothesis_collection: [extra_knowledge_0, output_hyp_0, reasoning_process_0, feedback_0, refined_hyp_0]
         hypothesis_collection = [structured_extra_knowledge[1], sturctured_hyp_gene[0], sturctured_hyp_gene[1], feedback, sturctured_hyp_gene_refined[0], sturctured_hyp_gene_refined[1]]
         return structured_extra_knowledge[0], hypothesis_collection
@@ -787,7 +783,7 @@ class HypothesisGenerationEA(object):
         ## generation
         while True:
             try:
-                cur_gene = llm_generation(full_prompt, self.args.model_name, self.client, api_type=self.args.api_type)
+                cur_gene = llm_generation(full_prompt, self.args.model_name, self.client)
                 cur_structured_gene = get_structured_generation_from_raw_generation(cur_gene, template=template)
                 break
             except AssertionError as e:
@@ -829,7 +825,7 @@ class HypothesisGenerationEA(object):
         # generation
         while True:
             try:
-                feedback = llm_generation(full_prompt, self.args.model_name, self.client, api_type=self.args.api_type)
+                feedback = llm_generation(full_prompt, self.args.model_name, self.client)
                 break
             except AssertionError as e:
                 # if the format
@@ -854,7 +850,7 @@ class HypothesisGenerationEA(object):
         # generation
         while True:
             try:
-                score_text = llm_generation(full_prompt, self.args.model_name, self.client, api_type=self.args.api_type)
+                score_text = llm_generation(full_prompt, self.args.model_name, self.client)
                 score_collection, score_reason_collection, if_successful = pick_score(score_text, full_prompt)
                 assert if_successful == True
                 break
@@ -879,8 +875,9 @@ class HypothesisGenerationEA(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Hypothesis generation')
     parser.add_argument("--model_name", type=str, default="chatgpt", help="model name: gpt4/chatgpt/chatgpt16k/claude35S/gemini15P/llama318b/llama3170b/llama31405b")
-    parser.add_argument("--api_type", type=int, default=1, help="2: use Soujanya's API; 1: use Dr. Xie's API; 0: use api from shanghai ai lab")
+    parser.add_argument("--api_type", type=int, default=1, help="0: openai's API toolkit; 1: azure's API toolkit")
     parser.add_argument("--api_key", type=str, default="")
+    parser.add_argument("--base_url", type=str, default="https://api.claudeshop.top/v1", help="base url for the API")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
     parser.add_argument("--if_use_background_survey", type=int, default=1, help="whether use background survey. 0: not use (replace the survey as 'Survey not provided. Please overlook the survey.'); 1: use")
     parser.add_argument("--if_use_strict_survey_question", type=int, default=1, help="whether to use the strict version of background survey and background question. strict version means the background should not have any close information to inspirations and the hypothesis, even if the close information is a commonly used method in that particular background question domain.")
@@ -932,7 +929,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
-    assert args.api_type in [0, 1, 2]
+    assert args.api_type in [0, 1]
     assert args.if_use_background_survey in [0, 1]
     assert args.if_use_strict_survey_question in [0, 1]
     assert args.if_save in [1]

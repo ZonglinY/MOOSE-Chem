@@ -9,6 +9,7 @@
 
 
 api_key="sk-"
+base_url="https://api.claudeshop.top/v1"
 
 model_name_insp_retrieval="gpt4"
 model_name_gene="llama318b"
@@ -27,7 +28,7 @@ do
         do
                 echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
                 python -u hypothesis_generation.py --model_name ${model_name_gene} \
-                        --api_type 0 --api_key ${api_key} \
+                        --api_type 0 --api_key ${api_key} --base_url ${base_url} \
                         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey ${if_use_background_survey} \
                         --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_${if_use_background_survey}_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
                         --output_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_corpus_300_survey_${if_use_background_survey}_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
@@ -41,7 +42,7 @@ do
                         
                 echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
                 python -u evaluate.py --model_name ${model_name_eval} \
-                        --api_type 0 --api_key ${api_key} \
+                        --api_type 0 --api_key ${api_key} --base_url ${base_url} \
                         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
                         --hypothesis_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_corpus_300_survey_${if_use_background_survey}_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
                         --output_dir ./Checkpoints/evaluation_${model_name_eval}_corpus_300_survey_${if_use_background_survey}_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
@@ -62,7 +63,7 @@ echo "Experiment 5 and Experiment 6 finished successfully"
 # do
 #         echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
 #         python -u hypothesis_generation.py --model_name ${model_name_gene} \
-#                 --api_type 1 --api_key ${api_key} \
+#                 --api_type 1 --api_key ${api_key} --base_url ${base_url} \
 #                 --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
 #                 --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
 #                 --output_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_baseline_${baseline_type}_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
@@ -76,7 +77,7 @@ echo "Experiment 5 and Experiment 6 finished successfully"
                 
 #         echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
 #         python -u evaluate.py --model_name ${model_name_eval} \
-#                 --api_type 0 --api_key ${api_key} \
+#                 --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #                 --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
 #                 --hypothesis_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_baseline_${baseline_type}_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
 #                 --output_dir ./Checkpoints/evaluation_${model_name_eval}_baseline_${baseline_type}_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
@@ -167,7 +168,7 @@ fi
 # do
 #         # echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
 #         # python -u hypothesis_generation.py --model_name ${model_name_gene} \
-#         #         --api_type 0 --api_key ${api_key} \
+#         #         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #         #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
 #         #         --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
 #         #         --output_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_baseline_${baseline_type}_corpus_300_survey_1_gdthInsp_0_roundInsp_${round_of_insp_screening}_intraEA_${if_mutate_inside_same_bkg_insp}_interEA_${if_mutate_between_diff_insp}_beamsize_${recom_num_beam_size}_bkgid_${bkg_q_id}.json \
@@ -181,7 +182,7 @@ fi
                 
 #         echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
 #         python -u evaluate.py --model_name ${model_name_eval} \
-#                 --api_type 0 --api_key ${api_key} \
+#                 --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #                 --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
 #                 --hypothesis_dir ${hypothesis_dir}${bkg_q_id}.json \
 #                 --output_dir ./Checkpoints/evaluation_${model_name_eval}_baseline_${baseline_type}_corpus_300_survey_1_gdthInsp_0_roundInsp_${round_of_insp_screening}_intraEA_${if_mutate_inside_same_bkg_insp}_interEA_${if_mutate_between_diff_insp}_beamsize_${recom_num_beam_size}_bkgid_${bkg_q_id}.json \
