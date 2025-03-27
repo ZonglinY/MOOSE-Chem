@@ -33,10 +33,10 @@ The input to MOOSE-Chem can be as simple as only:
 
 This repo contains all the code of **MOOSE-Chem**, to help every chemistry lab to catalyze their chemistry scientific discovery process.
 
-In general, **MOOSE-Chem** contains three stages: 
-(1) inspiration retrieval;
-(2) hypothesis generation; and
-(3) ranking.
+In general, **MOOSE-Chem** contains three stages:  
+&emsp;(1) inspiration retrieval;  
+&emsp;(2) hypothesis composition;   
+&emsp;(3) hypothesis ranking.
 
 The commands for the three stages are introduced after the "quick start".
 
@@ -54,7 +54,7 @@ pip install -r requirements.txt
 
 ```
 python -u inspiration_screening.py --model_name gpt4 \
-        --api_type 0 --api_key ${api_key} \
+        --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx \
         --output_dir ./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0.json \
         --corpus_size 300 --if_use_background_survey 1 --if_use_strict_survey_question 1 \
@@ -62,11 +62,16 @@ python -u inspiration_screening.py --model_name gpt4 \
         --if_save 1 --background_question_id 0 --if_select_based_on_similarity 0  \
 ```
 
-## Hypotheses Generation
+Customized *research question* and *background survey* can be used by modifying ```custom_rq, custom_bs = None, None``` to any string in inspiration_screening.py.
+
+Customized *inspiration corpus* can be adopted by setting ```--title_abstract_all_insp_literature_path``` to your customized file with format ```[[title, abstract], ...]```.
+
+
+## Hypothesis Composition
 
 ```
 python -u hypothesis_generation.py --model_name gpt4 \
-        --api_type 0 --api_key ${api_key} \
+        --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
         --inspiration_dir ./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0.json \
         --output_dir ./Checkpoints/hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
@@ -78,18 +83,32 @@ python -u hypothesis_generation.py --model_name gpt4 \
         --max_inspiration_search_steps 3 --background_question_id 0  \
 ```
 
+Customized *research question* and *background survey* can be used by modifying ```custom_rq, custom_bs = None, None``` to any string in hypothesis_generation.py.
+
+If used customized *inspiration corpus* in the previous inspiration retrieval step,  
+&emsp; (1) ```--title_abstract_all_insp_literature_path``` here for ```hypothesis_generation.py``` should be set as the same file used in the inspiration retrieval step;  
+&emsp; (2) ```--inspiration_dir``` here should be set the same as ```--output_dir``` used in inspiration retrieval step.
 
 
 
-## Ranking
+## Hypothesis Ranking
 ```
 python -u evaluate.py --model_name gpt4 \
-        --api_type 0 --api_key ${api_key} \
+        --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
         --hypothesis_dir ./Checkpoints/hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
         --output_dir ./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
         --if_save 1 --if_load_from_saved 0 \
+        --if_with_gdth_hyp_annotation 1 \
 ```
+
+Here ```--hypothesis_dir``` should be set the same as ```-output_dir``` used in the hypothesis composition step.
+
+If used customized research question and background survey,   
+&emsp;(1) ```--title_abstract_all_insp_literature_path``` should be set as the same file used in the previous steps (inspiration retrieval and hypothesis composition).  
+&emsp;(2) ```--if_with_gdth_hyp_annotation``` should be set to 0, unless you have the groundtruth hypothesis for the your customized research question (in this case you need to modify the groundtruth hypothesis loading function ```load_chem_annotation()```);   
+
+
 
 ---------
 
@@ -100,7 +119,7 @@ These basic commands for the three stages can also be found in ```main.sh```.
 ## Analysis
 
 ```analysis.py``` can be used to analyze the results of the three stages. 
-This [link](https://drive.google.com/file/d/1oboWo2f7jlgio-AXebt7UPqw2P6mX1lJ/view?usp=sharing) stores the result files from all the experiments mentioned in the paper. They can be used with ```analysis.py``` to display the experiment results reported in the paper.
+This [link](https://drive.google.com/file/d/1WdnB5Ztb4n3DNfwJeE9GJW-BJvdoWmNN/view?usp=sharing) stores the result files from all the experiments mentioned in the paper. They can be used with ```analysis.py``` to display the experiment results reported in the paper.
 
 ## An Example
 
