@@ -8,7 +8,7 @@
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FZonglinY%2FMOOSE-Chem&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 [![arXiv](https://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2410.07076)
 
-We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypotheses discovery. 
+We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypothesis discovery. 
 
 With only LLMs with training data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (also only available online in 2024) with very high similarity, covering the main innovations.
 
@@ -20,11 +20,11 @@ With only LLMs with training data up to October 2023, it has rediscovered many c
 
 The input to MOOSE-Chem can be as simple as only:
 
-&emsp;(1) a research question on any chemistry & material science domain;
+&emsp;(1) *research question*: can be on any chemistry & material science domain;
 
-&emsp;(2) (optionally) a several-paragraph-long survey describing the existing methods for the research question;
+&emsp;(2) *background survey*: (optionally) a several-paragraph-long survey describing the existing methods for the *research question*;
 
-&emsp;(3) (this repo contains the default 3000 papers) title and abstract of many random chemistry papers, preferably published on top venues.
+&emsp;(3) *inspiration corpus*: (this repo contains the default 3000 papers) title and abstract of many (random) chemistry papers that might serve as inspirations for the *research question*, preferably published on top venues.
 
 **MOOSE-Chem** can then output a list of ranked chemistry hypotheses (might take a few hours to "think") that could be both novel and valid.
 
@@ -83,11 +83,11 @@ python -u hypothesis_generation.py --model_name gpt4 \
         --max_inspiration_search_steps 3 --background_question_id 0  \
 ```
 
+Here ```--inspiration_dir``` should be set the same as ```--output_dir``` used in the inspiration retrieval step.
+
 Customized *research question* and *background survey* can be used by modifying ```custom_rq, custom_bs = None, None``` to any string in hypothesis_generation.py.
 
-If used customized *inspiration corpus* in the previous inspiration retrieval step,  
-&emsp; (1) ```--title_abstract_all_insp_literature_path``` here for ```hypothesis_generation.py``` should be set as the same file used in the inspiration retrieval step;  
-&emsp; (2) ```--inspiration_dir``` here should be set the same as ```--output_dir``` used in inspiration retrieval step.
+If used customized *inspiration corpus* in the inspiration retrieval step, ```--title_abstract_all_insp_literature_path``` should be set as the same file as used in the inspiration retrieval step.
 
 
 
@@ -104,10 +104,9 @@ python -u evaluate.py --model_name gpt4 \
 
 Here ```--hypothesis_dir``` should be set the same as ```-output_dir``` used in the hypothesis composition step.
 
-If used customized research question and background survey,   
-&emsp;(1) ```--title_abstract_all_insp_literature_path``` should be set as the same file used in the previous steps (inspiration retrieval and hypothesis composition).  
-&emsp;(2) ```--if_with_gdth_hyp_annotation``` should be set to 0, unless you have the groundtruth hypothesis for the your customized research question (in this case you need to modify the groundtruth hypothesis loading function ```load_chem_annotation()```);   
+If used customized *research question* and *background survey*, ```--if_with_gdth_hyp_annotation``` should be set to 0, unless the groundtruth hypothesis can be obtained for the customized *research question* (in this case the function to load groundtruth hypothesis ```load_chem_annotation()``` need to be modified).
 
+If used customized *inspiration corpus* in the inspiration retrieval and hypothesis composition steps, ```--title_abstract_all_insp_literature_path``` should be set as the same file as used in these steps.  
 
 
 ---------
@@ -129,18 +128,27 @@ Here we present a rediscovered hypothesis from MOOSE-Chem, with input:
 
 (2) 300 random chemistry papers published on Nature or Science, containing two groundtruth inspirations papers.
 
-### Rediscovered Hypothesis
-
-*A pioneering integrated electrocatalytic system leveraging **ruthenium** nanoparticles embedded in **nitrogen-doped** graphene, combined with a dual palladium-coated ion-exchange membrane reactor, will catalyze efficient, scalable, and site-selective reductive deuteration of aromatic hydrocarbons and heteroarenes. Utilizing deuterium sources from both $D_2$ gas and **D_2O**, this system will optimize parameters through real-time machine learning-driven dynamic adjustments. Specific configurations include ruthenium nanoparticle sizes (2-4 nm), nitrogen doping levels (12-14\%), precisely engineered palladium membranes (5 micrometers, ensuring 98\% deuterium-selective permeability), and advanced cyclic voltammetry protocols (1-5 Hz, -0.5V to -1.5V).*
-
 ### Ground Truth Hypothesis
 
 *The main hypothesis is that a **nitrogen-doped ruthenium (Ru)** electrode can effectively catalyze the reductive deuteration of (hetero)arenes in the presence of **D_2O**, leading to high deuterium incorporation into the resulting saturated cyclic compounds. The findings validate this hypothesis by demonstrating that this electrocatalytic method is highly efficient, scalable, and versatile, suitable for a wide range of substrates.*
+
+### Rediscovered Hypothesis
+
+*A pioneering integrated electrocatalytic system leveraging **ruthenium** nanoparticles embedded in **nitrogen-doped** graphene, combined with a dual palladium-coated ion-exchange membrane reactor, will catalyze efficient, scalable, and site-selective reductive deuteration of aromatic hydrocarbons and heteroarenes. Utilizing deuterium sources from both $D_2$ gas and **D_2O**, this system will optimize parameters through real-time machine learning-driven dynamic adjustments. Specific configurations include ruthenium nanoparticle sizes (2-4 nm), nitrogen doping levels (12-14\%), precisely engineered palladium membranes (5 micrometers, ensuring 98\% deuterium-selective permeability), and advanced cyclic voltammetry protocols (1-5 Hz, -0.5V to -1.5V).*
 
 ### Expert's analysis 
 
 The proposed hypothesis effectively covers two key points from the ground truth hypothesis: **the incorporation of ruthenium (Ru) and the use of D_2O as a deuterium source** within the electrocatalytic system. However, the current content does not detail the mechanism by which Ru-D is produced, which is essential for explaining the process of reductive deuteration. Nevertheless, the results are still insightful. The specific level of nitrogen doping, for example, is highly suggestive and warrants further investigation. Overall, the match remains strong in its alignment with the original hypothesis while also presenting opportunities for deeper exploration.
 
 
+## Bib Info
+If you found this repository useful, please consider 📑citing:
+
+	@inproceedings{yang2024msc,
+	    title = {MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses},
+	    author={Yang, Zonglin and Liu, Wanhao and Gao, Ben and Xie, Tong and Li, Yuqiang and Ouyang, Wanli and Poria, Soujanya and Cambria, Erik and Zhou, Dongzhan},
+	    booktitle = "ICLR",
+	    year = "2025"
+	}
 
 
