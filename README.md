@@ -147,8 +147,8 @@ If you found this repository useful, please consider 📑citing:
 	@inproceedings{yang2024msc,
 	    title = {MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses},
 	    author={Yang, Zonglin and Liu, Wanhao and Gao, Ben and Xie, Tong and Li, Yuqiang and Ouyang, Wanli and Poria, Soujanya and Cambria, Erik and Zhou, Dongzhan},
-	    booktitle = "ICLR",
-	    year = "2025"
+	    booktitle = {ICLR},
+	    year = {2025}
 	}
 
 
