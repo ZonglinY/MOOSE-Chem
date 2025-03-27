@@ -1,6 +1,6 @@
 from ast import List
 import numpy as np
-import json, random, copy
+import json, random, copy, os
 from utils import load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, load_bkg_and_insp_from_chem_annotation, load_chem_annotation, if_element_in_list_with_similarity_threshold
 from sympy import N
 np.set_printoptions(precision=2)
@@ -310,6 +310,9 @@ def get_average_screened_insp_hit_ratio_from_a_series_of_files(file_root_name_pa
     for cur_id in range(data_id_range[0], data_id_range[1]+1):
         # print("cur_id: ", cur_id)
         cur_file_path = file_root_name_path + str(cur_id) + ".json"
+        if not os.path.exists(cur_file_path):
+            print("Warning: file not exists: ", cur_file_path)
+            continue
         with open(cur_file_path, 'r') as f:
             cur_data = json.load(f)
         cur_hit_ratio_data = cur_data[1]
@@ -669,7 +672,10 @@ def get_average_ranking_position_for_hyp_with_gdth_insp(file_root_name_path, dat
     print("\nave_top_matched_score: {:.3f}; ave_ave_matched_score: {:.3f}".format(ave_top_matched_score, ave_ave_matched_score))
     
 
-
+## Function
+#   Calculate the agreement (1) between the model and the expert, and (2) between experts
+#   (1): only set expert_eval_file_path to the expert file path, and set second_expert_eval_file_path to None
+#   (2): set both expert_eval_file_path and second_expert_eval_file_path to the expert file path to compare
 # expert_eval_file: {bkg_id: {q_id: [gene_hyp, gdth_hyp, cnt_matched_insp, cur_matched_score, cur_matched_score_reason, expert_matched_score]}}
 # second_expert_eval_file_path: if not None, then compare the matched score between two experts, else only compare the matched score between the model and the expert
 def read_expert_eval_results(expert_eval_file_path, second_expert_eval_file_path=None):
@@ -687,14 +693,25 @@ def read_expert_eval_results(expert_eval_file_path, second_expert_eval_file_path
     elif "Ben" in expert_eval_file_path:
         id_bkg_list = [str(i) for i in range(seperate_bkg_id, 51)]
     elif "Penghui" in expert_eval_file_path:
-        # id_bkg_list = [str(i) for i in range(0, 6)] + [str(i) for i in range(seperate_bkg_id, seperate_bkg_id+6)]
-        id_bkg_list = [str(i) for i in range(0, 6)]
+        # agreement between the model and the expert
+        if second_expert_eval_file_path == None:
+            id_bkg_list = [str(i) for i in range(0, 6)] + [str(i) for i in range(seperate_bkg_id, seperate_bkg_id+6)]
+        else:
+            # agreement between the experts
+            if "Wanhao" in second_expert_eval_file_path:
+                id_bkg_list = [str(i) for i in range(0, 6)]
+            elif "Ben" in second_expert_eval_file_path:
+                id_bkg_list = [str(i) for i in range(seperate_bkg_id, seperate_bkg_id+6)]
+            else:
+                raise ValueError("Invalid second_expert_eval_file_path")
     else:
         raise ValueError("Invalid name")
 
     # top_matched_score: {matched_score_expert: cnt, ...}
     top_matched_score_expert_collection = {}
     hard_consistency_score, soft_consistency_score = 0, 0
+    # the number of matched score counted
+    num_ms_cnted = 0
     for cur_bkg_id in id_bkg_list:
         # print("cur_bkg_id: ", cur_bkg_id)
         assert len(expert_eval_file[cur_bkg_id]) == num_q_per_bkg or len(expert_eval_file[cur_bkg_id]) == 0, print("len(expert_eval_file[cur_bkg_id]): ", len(expert_eval_file[cur_bkg_id]))
@@ -721,12 +738,16 @@ def read_expert_eval_results(expert_eval_file_path, second_expert_eval_file_path
             # top_matched_score_expert
             if cur_expt_score > top_matched_score_expert:
                 top_matched_score_expert = cur_expt_score
+            num_ms_cnted += 1
         if top_matched_score_expert not in top_matched_score_expert_collection:
             top_matched_score_expert_collection[top_matched_score_expert] = 0
         top_matched_score_expert_collection[top_matched_score_expert] += 1
+
+    print("num_ms_cnted: ", num_ms_cnted)
+    assert num_ms_cnted == (len(id_bkg_list) * num_q_per_bkg)
+
     hard_consistency_score /= (len(id_bkg_list) * num_q_per_bkg)
     soft_consistency_score /= (len(id_bkg_list) * num_q_per_bkg)
-
     print("hard_consistency_score: {:.3f}; soft_consistency_score: {:.3f}".format(hard_consistency_score, soft_consistency_score))
     print("top_matched_score_expert_collection: {}".format(top_matched_score_expert_collection))
     
@@ -874,7 +895,8 @@ if __name__ == "__main__":
 
     ## Assumption 1
     # coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_
-    # file_root_name_path = "./Checkpoints/coarse_inspiration_search_llama318b_corpusSize_1000_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_"
+    # coarse_inspiration_search_llama318b_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_
+    # file_root_name_path = "./Checkpoints/coarse_inspiration_search_llama3170b_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_"
     # data_id_range = [0, 50]
     # # round_id = 3
     # for round_id in range(0, 4):
@@ -887,7 +909,7 @@ if __name__ == "__main__":
     # (gdth insp; MOOSE-Chem, without significance feedback (baseline 3); claude-3.5-Sonnet eval) evaluation_claude35S_baseline_3_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_
     # (full insp; MOOSE-chem) evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_
     # (full insp; MOOSE-Chem; claude-3.5-Sonnet eval) evaluation_claude35S_baseline_0_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_
-    # file_root_name_path = "./Checkpoints/evaluation_gemini15P_corpus_300_survey_0_gdthInsp_1_intraEA_1_interEA_1_bkgid_"
+    # file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_"
     # data_id_range = [0, 50]
     # get_expert_eval_file_type = 0
     # if_save = False
@@ -899,23 +921,23 @@ if __name__ == "__main__":
     # evaluation_gpt4_intraEA_1_interEA_1_gdthInsp_1_bkgid_
     # (full insp; MOOSE-chem) evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_
     # (baseline) evaluation_gpt4_baseline_2_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_0_interEA_0_beamsize_15_bkgid_
-    # file_root_name_path = "./Checkpoints/evaluation_gemini15P_baseline_0_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_0_interEA_1_beamsize_15_bkgid_"
-    # data_id_range = [0, 50]
-    # if_random_order = False
-    # keep_top_ratio = 1.0
-    # max_step = -1
-    # get_average_ranking_position_for_hyp_with_gdth_insp(file_root_name_path, data_id_range, if_random_order=if_random_order, keep_top_ratio=keep_top_ratio, max_step=max_step)
+    file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_"
+    data_id_range = [0, 50]
+    if_random_order = False
+    keep_top_ratio = 1.0
+    max_step = 1
+    get_average_ranking_position_for_hyp_with_gdth_insp(file_root_name_path, data_id_range, if_random_order=if_random_order, keep_top_ratio=keep_top_ratio, max_step=max_step)
 
 
     ## expert eval
     # expert_eval_for_selected_hyp_in_exp_5_Wanhao
     # expert_eval_for_selected_hyp_in_exp_5_BenGao
+    # expert_eval_for_selected_hyp_in_exp_5_Penghui
     # expert_eval_for_selected_hyp_in_exp_8_Wanhao
     # expert_eval_for_selected_hyp_in_exp_8_Ben
-    # expert_eval_for_selected_hyp_in_exp_5_Penghui
-    # expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_5_Penghui.json"
-    # second_expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_5_Wanhao.json"
-    # # second_expert_eval_file_path = None
+    # expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_5_Wanhao.json"
+    # # second_expert_eval_file_path = "./Expert_Evaluation/expert_eval_for_selected_hyp_in_exp_5_BenGao.json"
+    # second_expert_eval_file_path = None
     # read_expert_eval_results(expert_eval_file_path, second_expert_eval_file_path=second_expert_eval_file_path)
 
 
@@ -926,5 +948,5 @@ if __name__ == "__main__":
 
 
     ## Find what proportion of high-scored (match score) hypothesis can be resulted from EU
-    file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_"
-    analyze_EU_find_proportion(file_root_name_path, start_bkg_idx=0, end_bkg_idx=51, threshold=0)
+    # file_root_name_path = "./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_roundInsp_1_intraEA_1_interEA_1_beamsize_15_bkgid_"
+    # analyze_EU_find_proportion(file_root_name_path, start_bkg_idx=0, end_bkg_idx=51, threshold=0)
