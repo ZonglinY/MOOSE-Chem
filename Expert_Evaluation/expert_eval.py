@@ -5,7 +5,7 @@ class ExpertEval(object):
     def __init__(self, exp_id) -> None:
         self.exp_id = exp_id
         self.input_data_path = "./expert_eval_for_selected_hyp_in_exp_{}.json".format(exp_id)
-        # self.name: "Wanhao" or "Ben"
+        # self.name: "Wanhao" or "Ben" or "Penghui"
         self.name = None
         # self.data: {bkg_id: {q_id: [gene_hyp, gdth_hyp, cnt_matched_insp, cur_matched_score, cur_matched_score_reason, expert_matched_score]}}
         self.data = self.load_data()
@@ -26,8 +26,8 @@ class ExpertEval(object):
 
     def start_eval(self):
         name = None
-        while (name != "Wanhao" and name != "Ben"):
-            name = input("Please input your name: (please input Wanhao or Ben): ")
+        while (name != "Wanhao" and name != "Ben" and name != "Penghui"):
+            name = input("Please input your name: (please input Wanhao or Ben or Penghui): ")
         self.name = name
         self.output_data_path = "./expert_eval_for_selected_hyp_in_exp_{}_{}.json".format(self.exp_id, self.name)
 
@@ -35,6 +35,8 @@ class ExpertEval(object):
             id_bkg_list = [str(i) for i in range(0, self.seperate_bkg_id)]
         elif name == "Ben":
             id_bkg_list = [str(i) for i in range(self.seperate_bkg_id, 51)]
+        elif name == "Penghui":
+            id_bkg_list = [str(i) for i in range(0, 6)] + [str(i) for i in range(self.seperate_bkg_id, self.seperate_bkg_id + 6)]
         else:
             raise ValueError("Invalid name")
         
@@ -48,11 +50,9 @@ class ExpertEval(object):
                 # print("prev_output_file.keys(): ", prev_output_file.keys())
             # get the lastest background id and question id to resume (last_bkg_id_to_resume and last_q_id_to_resume)
             if_already_identified_ids = False
-            for bkg_id in prev_output_file:
+            # for bkg_id in prev_output_file:
+            for bkg_id in id_bkg_list:
                 # print("bkg_id: ", bkg_id)
-                if self.name == "Ben":
-                    if int(bkg_id) < self.seperate_bkg_id:
-                        continue
                 for q_id in range(len(prev_output_file[bkg_id])):
                     # print("q_id: ", q_id)
                     if len(prev_output_file[bkg_id][q_id]) == 6:
