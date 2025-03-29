@@ -15,7 +15,7 @@ base_url="https://api.claudeshop.top/v1"
 
 # # coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0
 # --title_abstract_all_insp_literature_path (inspiration corpus dir; if not provided, use the default one involving args.corpus_size)
-# python -u inspiration_screening.py --model_name gpt4 \
+# python -u ./Method/inspiration_screening.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx \
 #         --output_dir ./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0.json \
@@ -28,7 +28,7 @@ base_url="https://api.claudeshop.top/v1"
 
 # # # hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0
 # --title_abstract_all_insp_literature_path (inspiration corpus dir; if not provided, use the default one involving args.corpus_size)
-# python -u hypothesis_generation.py --model_name gpt4 \
+# python -u ./Method/hypothesis_generation.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
 #         --inspiration_dir ./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0.json \
@@ -44,7 +44,7 @@ base_url="https://api.claudeshop.top/v1"
 
 # # evaluation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0
 # --title_abstract_all_insp_literature_path (inspiration corpus dir; if not provided, use the default one involving args.corpus_size)
-# python -u evaluate.py --model_name gpt4 \
+# python -u ./Method/evaluate.py --model_name gpt4 \
 #         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
 #         --hypothesis_dir ./Checkpoints/hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
@@ -56,7 +56,7 @@ base_url="https://api.claudeshop.top/v1"
 
 # evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_
 # model_name=gpt4
-# python -u groundtruth_hyp_ranking.py --model_name ${model_name} \
+# python -u ./Analysis/groundtruth_hyp_ranking.py --model_name ${model_name} \
 #         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #         --evaluate_result_dir ./Checkpoints/evaluation_gpt4_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_ \
 #         --if_save 1 --output_dir ./Checkpoints/groundtruth_hypothesis_automatic_scores_four_aspects_${model_name}.json

@@ -27,7 +27,7 @@ do
         for bkg_q_id in {0..50}
         do
                 echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
-                python -u hypothesis_generation.py --model_name ${model_name_gene} \
+                python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
                         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
                         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey ${if_use_background_survey} \
                         --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_${if_use_background_survey}_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
@@ -41,7 +41,7 @@ do
                         --baseline_type 0
                         
                 echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
-                python -u evaluate.py --model_name ${model_name_eval} \
+                python -u ./Method/evaluate.py --model_name ${model_name_eval} \
                         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
                         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
                         --hypothesis_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_corpus_300_survey_${if_use_background_survey}_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
@@ -62,7 +62,7 @@ echo "Experiment 5 and Experiment 6 finished successfully"
 # for bkg_q_id in {0..50}
 # do
 #         echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
-#         python -u hypothesis_generation.py --model_name ${model_name_gene} \
+#         python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
 #                 --api_type 1 --api_key ${api_key} --base_url ${base_url} \
 #                 --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
 #                 --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
@@ -76,7 +76,7 @@ echo "Experiment 5 and Experiment 6 finished successfully"
 #                 --baseline_type ${baseline_type}
                 
 #         echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
-#         python -u evaluate.py --model_name ${model_name_eval} \
+#         python -u ./Method/evaluate.py --model_name ${model_name_eval} \
 #                 --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #                 --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
 #                 --hypothesis_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_baseline_${baseline_type}_corpus_300_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_${bkg_q_id}.json \
@@ -167,7 +167,7 @@ fi
 # for bkg_q_id in {0..50}
 # do
 #         # echo "\n\nEntering loop for bkg_q_id: $bkg_q_id"
-#         # python -u hypothesis_generation.py --model_name ${model_name_gene} \
+#         # python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
 #         #         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #         #         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
 #         #         --inspiration_dir ./Checkpoints/coarse_inspiration_search_${model_name_insp_retrieval}_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_${bkg_q_id}.json \
@@ -181,7 +181,7 @@ fi
 #         #         --baseline_type ${baseline_type}
                 
 #         echo "\n\nRunning evaluate.py for bkg_q_id: $bkg_q_id"
-#         python -u evaluate.py --model_name ${model_name_eval} \
+#         python -u ./Method/evaluate.py --model_name ${model_name_eval} \
 #                 --api_type 0 --api_key ${api_key} --base_url ${base_url} \
 #                 --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
 #                 --hypothesis_dir ${hypothesis_dir}${bkg_q_id}.json \
