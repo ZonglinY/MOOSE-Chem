@@ -52,7 +52,7 @@ pip install -r requirements.txt
 ## Inspiration Retrieval
 
 ```
-python -u inspiration_screening.py --model_name gpt4 \
+python -u ./Method/inspiration_screening.py --model_name gpt4 \
         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx \
         --output_dir ./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0.json \
@@ -69,7 +69,7 @@ Customized *inspiration corpus* can be adopted by setting ```--title_abstract_al
 ## Hypothesis Composition
 
 ```
-python -u hypothesis_generation.py --model_name gpt4 \
+python -u ./Method/hypothesis_generation.py --model_name gpt4 \
         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
         --inspiration_dir ./Checkpoints/coarse_inspiration_search_gpt4_corpusSize_300_survey_1_strict_1_numScreen_15_round_4_similarity_0_bkgid_0.json \
@@ -92,7 +92,7 @@ If used customized *inspiration corpus* in the inspiration retrieval step, ```--
 
 ## Hypothesis Ranking
 ```
-python -u evaluate.py --model_name gpt4 \
+python -u ./Method/evaluate.py --model_name gpt4 \
         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 300 \
         --hypothesis_dir ./Checkpoints/hypothesis_generation_gpt4_corpus_300_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
@@ -116,7 +116,7 @@ These basic commands for the three stages can also be found in ```main.sh```.
 
 ## Analysis
 
-```analysis.py``` can be used to analyze the results of the three stages. 
+```./Analysis/analysis.py``` can be used to analyze the results of the three stages. 
 This [link](https://drive.google.com/file/d/1WdnB5Ztb4n3DNfwJeE9GJW-BJvdoWmNN/view?usp=sharing) stores the result files from all the experiments mentioned in the paper. They can be used with ```analysis.py``` to display the experiment results reported in the paper.
 
 ## An Example
