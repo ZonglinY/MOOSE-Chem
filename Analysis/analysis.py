@@ -1,7 +1,8 @@
 from ast import List
 import numpy as np
-import json, random, copy, os
-from utils import load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, load_bkg_and_insp_from_chem_annotation, load_chem_annotation, if_element_in_list_with_similarity_threshold
+import json, random, copy, os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Method.utils import load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, load_bkg_and_insp_from_chem_annotation, load_chem_annotation, if_element_in_list_with_similarity_threshold
 from sympy import N
 np.set_printoptions(precision=2)
 

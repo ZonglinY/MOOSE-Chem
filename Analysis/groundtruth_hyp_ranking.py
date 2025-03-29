@@ -1,6 +1,7 @@
-import os, argparse, json, time, copy, math
+import os, sys, argparse, json, time, copy, math
 from openai import OpenAI, AzureOpenAI
-from utils import load_chem_annotation, instruction_prompts, llm_generation, pick_score
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Method.utils import load_chem_annotation, instruction_prompts, llm_generation, pick_score
 import numpy as np
 
 

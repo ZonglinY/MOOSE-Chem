@@ -1,9 +1,10 @@
 from ast import Not
 from multiprocessing import Value
-import os, argparse, json, time, copy, math
+import os, sys, argparse, json, time, copy, math
 from openai import OpenAI, AzureOpenAI
 import numpy as np
-from utils import load_chem_annotation, load_dict_title_2_abstract, load_found_inspirations, get_item_from_dict_with_very_similar_but_not_exact_key, instruction_prompts, llm_generation, get_structured_generation_from_raw_generation, pick_score, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_groundtruth_inspirations_as_screened_inspirations
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Method.utils import load_chem_annotation, load_dict_title_2_abstract, load_found_inspirations, get_item_from_dict_with_very_similar_but_not_exact_key, instruction_prompts, llm_generation, get_structured_generation_from_raw_generation, pick_score, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_groundtruth_inspirations_as_screened_inspirations
 
 class HypothesisGenerationEA(object):
     # custom_rq (text) and custom_bs (text) are used when the user has their own research question and background survey to work on (but not those in the Tomato-Chem benchmark), and leverage MOOSE-Chem for inference

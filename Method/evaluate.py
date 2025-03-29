@@ -1,7 +1,8 @@
-import os, argparse, json, time, copy, math
+import os, sys, argparse, json, time, copy, math
 import numpy as np
 from openai import OpenAI, AzureOpenAI
-from utils import load_chem_annotation, instruction_prompts, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Method.utils import load_chem_annotation, instruction_prompts, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold
 
 class Evaluate(object):
 
