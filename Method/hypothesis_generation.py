@@ -929,7 +929,6 @@ if __name__ == "__main__":
     parser.add_argument("--baseline_type", type=int, default=0, help="0: not using baseline; 1: MOOSE w/o novelty and clarity checker (Scimon); 2. MOOSE w/o novelty retrieval (<Large Language Models are Zero Shot Hypothesis Proposers>); 3: MOOSE-Chem w/o significance checker")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
     assert args.api_type in [0, 1]
     assert args.if_use_background_survey in [0, 1]
     assert args.if_use_strict_survey_question in [0, 1]

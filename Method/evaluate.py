@@ -221,7 +221,6 @@ if __name__ == '__main__':
     parser.add_argument("--if_with_gdth_hyp_annotation", type=int, default=1, help="whether we have groundtruth hypothesis annotation to calculate the matched score and following analysis. If we don't have groundtruth hypothesis annotation, here we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
     assert args.api_type in [0, 1]
     assert args.if_use_strict_survey_question in [0, 1]
     assert args.if_save in [1]

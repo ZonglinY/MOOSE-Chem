@@ -9,11 +9,11 @@
 
 
 api_key="sk-"
-base_url="https://api.claudeshop.top/v1"
+base_url=""
 
-model_name_insp_retrieval="gpt4"
-model_name_gene="llama318b"
-model_name_eval="gpt4"
+model_name_insp_retrieval="gpt-4o-mini"
+model_name_gene="gpt-4o-mini"
+model_name_eval="gpt-4o-mini"
 
 
 

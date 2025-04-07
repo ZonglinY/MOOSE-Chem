@@ -224,7 +224,6 @@ if __name__ == '__main__':
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
     args = parser.parse_args()
 
-    assert args.model_name in ['chatgpt', 'chatgpt16k', 'gpt4', 'claude35S', 'gemini15P', 'llama318b', 'llama3170b', 'llama31405b']
     assert args.api_type in [0, 1]
     # assert args.if_save in [0, 1]
     assert args.num_screening_window_size >= 10

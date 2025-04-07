@@ -9,8 +9,8 @@
 
 
 api_key="sk-"
-base_url="https://api.claudeshop.top/v1"
-model_name_insp_retrieval="llama3170b"
+base_url=""
+model_name_insp_retrieval="gpt-4o-mini"
 
 
 ## Define the base command, that is shared across all experiments
