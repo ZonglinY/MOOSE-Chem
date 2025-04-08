@@ -38,7 +38,7 @@ model_name_eval="gpt-4o-mini"
 #         --output_dir ./Checkpoints/hypothesis_generation_${model_name_gene}_corpus_150_survey_1_gdthInsp_0_intraEA_1_interEA_1_bkgid_0.json \
 #         --if_save 1 --if_load_from_saved 0 \
 #         --if_use_gdth_insp 0 --idx_round_of_first_step_insp_screening 1 \
-#         --num_mutations 2 --num_itr_self_refine 2  --num_self_explore_steps_each_line 2 --num_screening_window_size 12 --num_screening_keep_size 3 \
+#         --num_mutations 3 --num_itr_self_refine 3  --num_self_explore_steps_each_line 3 --num_screening_window_size 12 --num_screening_keep_size 3 \
 #         --if_mutate_inside_same_bkg_insp 1 --if_mutate_between_diff_insp 1 --if_self_explore 0 --if_consider_external_knowledge_feedback_during_second_refinement 0 \
 #         --inspiration_ids -1  --recom_inspiration_ids  --recom_num_beam_size 15  --self_explore_inspiration_ids   --self_explore_num_beam_size 15 \
 #         --max_inspiration_search_steps 3 --background_question_id 0  \
