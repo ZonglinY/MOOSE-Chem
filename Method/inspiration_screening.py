@@ -1,7 +1,8 @@
-import os, sys, argparse, json
+import os, sys, argparse, json, builtins
 from openai import OpenAI, AzureOpenAI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Method.utils import instruction_prompts, load_chem_annotation, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation_while_loop
+from Method.utils import instruction_prompts, load_chem_annotation, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation_while_loop, exchange_order_in_list
+from Method.logging_utils import setup_logger
 
 
 # Coarse grained inspiration screening
@@ -139,7 +140,8 @@ class Screening(object):
                 full_prompt = prompts[0] + bkg_research_question + prompts[1] + backgroud_survey + prompts[2] + cur_title_abstract_pairs_prompt + prompts[3]
                 # cur_structured_gene: [[Title, Reason], [Title, Reason], ...]
                 # Use zero temperature to escavate heuristics in the model the most 
-                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0)  
+                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, restructure_output_model_name=self.args.model_name)  
+                # cur_structured_gene = exchange_order_in_list(cur_structured_gene)
             else:
                 cur_structured_gene = [[cur_title_abstract_pairs[cur_ta_id][0], "Less than num_screening_keep_size, so keep them without screening."] for cur_ta_id in range(len(cur_title_abstract_pairs))]
             # update next_round_inspiration_candidates
@@ -238,12 +240,21 @@ if __name__ == '__main__':
     if args.title_abstract_all_insp_literature_path == "":
         args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
     # args.output_dir = os.path.abspath(args.output_dir)
+
+    ## Setup logger
+    logger = setup_logger(args.output_dir)
+    # Redirect print to logger
+    def custom_print(*args, **kwargs):
+        message = " ".join(map(str, args))
+        logger.info(message)
+    # global print
+    # print = custom_print
+    builtins.print = custom_print
     print("args: ", args)
 
     # initialize custom_rq and custom_bs to text to use them for inference (but not those in the Tomato-Chem benchmark)
     custom_rq, custom_bs = None, None
-
-
+    
     # run Screening
     if os.path.exists(args.output_dir):
         print("Warning: The output_dir already exists. Will skip this retrival.")

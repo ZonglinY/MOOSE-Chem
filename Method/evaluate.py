@@ -1,8 +1,9 @@
-import os, sys, argparse, json, time, copy, math
+import os, sys, argparse, json, time, copy, math, builtins
 import numpy as np
 from openai import OpenAI, AzureOpenAI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Method.utils import load_chem_annotation, instruction_prompts, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold
+from Method.utils import load_chem_annotation, instruction_prompts, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold, exchange_order_in_list
+from Method.logging_utils import setup_logger
 
 class Evaluate(object):
 
@@ -157,7 +158,8 @@ class Evaluate(object):
         prompts = instruction_prompts('eval_matched_score')
         full_prompt = prompts[0] + gene_hyp + prompts[1] + gold_hyp + prompts[2] + keypoints + prompts[3]
         # structured_gene: [matched_score, reason]
-        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Matched score:', 'Reason:'], temperature=0.0)
+        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Reason:', 'Matched score:'], temperature=0.0, restructure_output_model_name=self.args.model_name)
+        structured_gene = exchange_order_in_list(structured_gene)
         return structured_gene
         
 
@@ -233,6 +235,16 @@ if __name__ == '__main__':
         # if not use the official inspiration corpus, we assume there would not be any groundtruth annotations for the hypothesis; else it's possible for both cases
         print("INFO: no groundtruth hypothesis annotation is provided, so we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")
         assert args.if_with_gdth_hyp_annotation == 0
+
+    ## Setup logger
+    logger = setup_logger(args.output_dir)
+    # Redirect print to logger
+    def custom_print(*args, **kwargs):
+        message = " ".join(map(str, args))
+        logger.info(message)
+    # global print
+    # print = custom_print
+    builtins.print = custom_print
     print("args: ", args)
 
     # skip if the output_dir already exists

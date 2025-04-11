@@ -1,10 +1,11 @@
 from ast import Not
 from multiprocessing import Value
-import os, sys, argparse, json, time, copy, math
+import os, sys, argparse, json, time, copy, math, builtins
 from openai import OpenAI, AzureOpenAI
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Method.utils import load_chem_annotation, load_dict_title_2_abstract, load_found_inspirations, get_item_from_dict_with_very_similar_but_not_exact_key, instruction_prompts, llm_generation, get_structured_generation_from_raw_generation, pick_score, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_groundtruth_inspirations_as_screened_inspirations
+from Method.utils import load_chem_annotation, load_dict_title_2_abstract, load_found_inspirations, get_item_from_dict_with_very_similar_but_not_exact_key, instruction_prompts, llm_generation, get_structured_generation_from_raw_generation, pick_score, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_groundtruth_inspirations_as_screened_inspirations, exchange_order_in_list
+from Method.logging_utils import setup_logger
 
 class HypothesisGenerationEA(object):
     # custom_rq (text) and custom_bs (text) are used when the user has their own research question and background survey to work on (but not those in the Tomato-Chem benchmark), and leverage MOOSE-Chem for inference
@@ -287,7 +288,8 @@ class HypothesisGenerationEA(object):
         # generation
         # structured_extra_knowledge: [[Title0, Reason0], [Title1, Reason1], ...]
         # we might want the temperature for inspiration retrieval to be zero, for better reflecting heuristics & stable performance
-        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0)
+        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, restructure_output_model_name=self.args.model_name)
+        # structured_extra_knowledge = exchange_order_in_list(structured_extra_knowledge)
         structured_extra_knowledge = [[recover_generated_title_to_exact_version_of_title(list(self.dict_title_2_abstract.keys()), item[0]), item[1]] for item in structured_extra_knowledge]
         # selected_titles: [Title0, Title1, ...]
         selected_titles = [item[0] for item in structured_extra_knowledge]
@@ -631,7 +633,7 @@ class HypothesisGenerationEA(object):
                 other_mutations_prompt += cur_other_mutation_prompt
             full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + input_hyp + prompts[4] + other_mutations_prompt + prompts[5]
         # structured_extra_knowledge: [Yes/No, extra_knowledge/reason for it is complete]
-        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['If need extra knowledge:', 'Details:'], gene_format_constraint=[0, ['Yes', 'No']], if_only_return_one_structured_gene_component=True)
+        structured_extra_knowledge = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['If need extra knowledge:', 'Details:'], gene_format_constraint=[0, ['Yes', 'No']], if_only_return_one_structured_gene_component=True, restructure_output_model_name=self.args.model_name)
         if structured_extra_knowledge[0] == 'No':
             hypothesis_collection = [structured_extra_knowledge[1], None, None, None, None]
             return structured_extra_knowledge[0], hypothesis_collection
@@ -640,18 +642,20 @@ class HypothesisGenerationEA(object):
         assert len(prompts) == 6
         full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + input_hyp + prompts[4] + structured_extra_knowledge[1] + prompts[5]
         # structured_gene: [hyp, reasoning process]
-        sturctured_hyp_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Hypothesis:', 'Reasoning Process:'], if_only_return_one_structured_gene_component=True)
+        sturctured_hyp_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Reasoning Process:', 'Hypothesis:'], if_only_return_one_structured_gene_component=True, restructure_output_model_name=self.args.model_name)
+        sturctured_hyp_gene = exchange_order_in_list(sturctured_hyp_gene)
         ## provide feedback to hypothesis
         prompts = instruction_prompts("provide_feedback_to_hypothesis_four_aspects_with_extra_knowledge")
         assert len(prompts) == 6
         full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + structured_extra_knowledge[1] + prompts[4] + sturctured_hyp_gene[0] + prompts[5]
-        feedback = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=False)
+        feedback = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=False, restructure_output_model_name=self.args.model_name)
         ## hypothesis refinement
         prompts = instruction_prompts("hypothesis_refinement_with_feedback_with_extra_knowledge")
         assert len(prompts) == 7
         full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + structured_extra_knowledge[1] + prompts[4] + sturctured_hyp_gene[0] + prompts[5] + feedback + prompts[6]
         # structured_gene: [hyp, reasoning process]
-        sturctured_hyp_gene_refined = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Refined Hypothesis:', 'Reasoning Process:'], if_only_return_one_structured_gene_component=True)
+        sturctured_hyp_gene_refined = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Reasoning Process:', 'Refined Hypothesis:'], if_only_return_one_structured_gene_component=True, restructure_output_model_name=self.args.model_name)
+        sturctured_hyp_gene_refined = exchange_order_in_list(sturctured_hyp_gene_refined)
         # hypothesis_collection: [extra_knowledge_0, output_hyp_0, reasoning_process_0, feedback_0, refined_hyp_0]
         hypothesis_collection = [structured_extra_knowledge[1], sturctured_hyp_gene[0], sturctured_hyp_gene[1], feedback, sturctured_hyp_gene_refined[0], sturctured_hyp_gene_refined[1]]
         return structured_extra_knowledge[0], hypothesis_collection
@@ -706,13 +710,13 @@ class HypothesisGenerationEA(object):
                 prompts = instruction_prompts("final_recombinational_mutation_hyp_gene_between_diff_inspiration")
                 assert len(prompts) == 6
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + this_mutation + prompts[4] + other_mutations_prompt + prompts[5]
-                template=['Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Hypothesis:']
             # during refinement of recombination of different insp islands, we need to keep seeing the different hyps from different insp islands
             elif same_mutation_prev_hyp != None and hyp_feedback != None:
                 prompts = instruction_prompts("final_recombinational_mutation_hyp_gene_between_diff_inspiration_with_feedback")
                 assert len(prompts) == 8
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + this_mutation + prompts[4] + other_mutations_prompt + prompts[5] + same_mutation_prev_hyp + prompts[6] + hyp_feedback + prompts[7]
-                template=['Refined Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Refined Hypothesis:']
             else:
                 raise ValueError("should not have this case. same_mutation_prev_hyp: {}; hyp_feedback: {}".format(same_mutation_prev_hyp, hyp_feedback))
         elif recombination_type == 1:
@@ -727,12 +731,12 @@ class HypothesisGenerationEA(object):
                 prompts = instruction_prompts("final_recombinational_mutation_hyp_gene_same_bkg_insp")
                 assert len(prompts) == 5
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + other_mutations_prompt + prompts[4]
-                template=['Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Hypothesis:']
             elif same_mutation_prev_hyp != None and hyp_feedback != None:
                 prompts = instruction_prompts("final_recombinational_mutation_hyp_gene_same_bkg_insp_with_feedback")
                 assert len(prompts) == 7
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + other_mutations_prompt + prompts[4] + same_mutation_prev_hyp + prompts[5] + hyp_feedback + prompts[6]
-                template=['Refined Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Refined Hypothesis:']
             else:
                 raise ValueError("should not have this case. same_mutation_prev_hyp: {}; hyp_feedback: {}".format(same_mutation_prev_hyp, hyp_feedback))
         elif recombination_type == 0:
@@ -747,19 +751,19 @@ class HypothesisGenerationEA(object):
                 prompts = instruction_prompts("coarse_hypothesis_generation_only_core_inspiration")
                 assert len(prompts) == 4
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3]
-                template=['Hypothesis:', 'Reasoning Process:']
+                template=['Reasoning Process:', 'Hypothesis:']
             elif other_mutations == None and hyp_feedback != None:
                 prompts = instruction_prompts("hypothesis_generation_with_feedback_only_core_inspiration")
                 assert len(prompts) == 6
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + same_mutation_prev_hyp + prompts[4] + hyp_feedback + prompts[5]
-                template=['Refined Hypothesis:', 'Reasoning Process:']
+                template=['Reasoning Process:', 'Refined Hypothesis:']
             # to develop the second or more mutation line that should be different with the hypotheses from previous mutation lines
             elif other_mutations != None and hyp_feedback == None:
                 prompts = instruction_prompts("hypothesis_generation_mutation_different_with_prev_mutations_only_core_inspiration")
                 assert len(prompts) == 5
                 # full_prompt
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + cur_insp_core_node_prompt + prompts[3] + other_mutations_prompt + prompts[4]
-                template=['Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Hypothesis:']
             elif other_mutations != None and hyp_feedback != None:
                 raise ValueError("should not have both other_mutations and hyp_feedback")
             else:
@@ -770,12 +774,12 @@ class HypothesisGenerationEA(object):
                 prompts = instruction_prompts("coarse_hypothesis_generation_without_inspiration")
                 assert len(prompts) == 3
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] 
-                template=['Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Hypothesis:']
             elif hyp_feedback != None:
                 prompts = instruction_prompts("hypothesis_generation_with_feedback_without_inspiration")
                 assert len(prompts) == 5
                 full_prompt = prompts[0] + backgroud_question + prompts[1] + backgroud_survey + prompts[2] + same_mutation_prev_hyp + prompts[3] + hyp_feedback + prompts[4]
-                template=['Refined Hypothesis:', 'Reasoning Process:']
+                template = ['Reasoning Process:', 'Refined Hypothesis:']
             else:
                 raise ValueError("should not have this case")
         else:
@@ -786,6 +790,7 @@ class HypothesisGenerationEA(object):
             try:
                 cur_gene = llm_generation(full_prompt, self.args.model_name, self.client)
                 cur_structured_gene = get_structured_generation_from_raw_generation(cur_gene, template=template)
+                cur_structured_gene = exchange_order_in_list(cur_structured_gene)
                 break
             except AssertionError as e:
                 # if the format
@@ -852,13 +857,15 @@ class HypothesisGenerationEA(object):
         while True:
             try:
                 score_text = llm_generation(full_prompt, self.args.model_name, self.client)
-                score_collection, score_reason_collection, if_successful = pick_score(score_text, full_prompt)
+                score_collection, score_reason_collection, if_successful = pick_score(score_text)
                 assert if_successful == True
                 break
             except AssertionError as e:
+                print(f"Warning: pick_score failed, score_text: {score_text}")
                 # if the format
                 print("AssertionError: {}, try again..".format(e))
             except Exception as e:
+                print(f"Warning: pick_score failed, score_text: {score_text}")
                 print("Exception: {}, try again..".format(e))
         return score_collection, score_reason_collection
     
@@ -952,6 +959,16 @@ if __name__ == "__main__":
         # the baseline is based on MOOSE, not MOOSE-Chem, so we set up the parameters for MOOSE
         assert args.if_mutate_inside_same_bkg_insp == 0 and args.if_mutate_between_diff_insp == 0 and args.if_self_explore == 0
     # args.output_dir = os.path.abspath(args.output_dir)
+
+    ## Setup logger
+    logger = setup_logger(args.output_dir)
+    # Redirect print to logger
+    def custom_print(*args, **kwargs):
+        message = " ".join(map(str, args))
+        logger.info(message)
+    # global print
+    # print = custom_print
+    builtins.print = custom_print
     print("args: ", args)
 
     # initialize custom_rq and custom_bs to text to use them for inference (but not those in the Tomato-Chem benchmark)
