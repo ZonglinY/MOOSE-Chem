@@ -26,7 +26,7 @@ class Evaluate(object):
         self.bkg_q_list, self.dict_bkg2insp, self.dict_bkg2survey, self.dict_bkg2groundtruthHyp, self.dict_bkg2note, self.dict_bkg2idx, self.dict_idx2bkg, self.dict_bkg2reasoningprocess = load_chem_annotation(args.chem_annotation_path, self.args.if_use_strict_survey_question)   
         # title_abstract_collector: [[title, abstract], ...]
         # dict_title_2_abstract: {'title': 'abstract', ...}
-        self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)  
+        self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.custom_inspiration_corpus_path)  
         ## load raw hypothesis
         # final_data_collection: {backgroud_question: {core_insp_title: hypthesis_mutation_collection, ...}, ...}
         #     hypthesis_mutation_collection: {mutation_id: [[hyp0, reasoning process0, feedback0], [hyp1, reasoning process1, feedback1], ...]}; mutation_id: 0, 1, 2, ... & 'recom'
@@ -214,7 +214,7 @@ if __name__ == '__main__':
     parser.add_argument("--base_url", type=str, default="https://api.claudeshop.top/v1", help="base url for the API")
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
     parser.add_argument("--if_use_strict_survey_question", type=int, default=1, help="whether to use the strict version of background survey and background question. strict version means the background should not have any close information to inspirations and the hypothesis, even if the close information is a commonly used method in that particular background question domain.")
-    parser.add_argument("--title_abstract_all_insp_literature_path", type=str, default="", help="store title and abstract of the inspiration corpus; Should be a json file in a format of [[title, abstract], ...]; It will be automatically assigned with a default value if it is not assigned by users. The default value is './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size). (The default value is the groundtruth inspiration papers for the Tomato-Chem Benchmark and random high-quality papers)")
+    parser.add_argument("--custom_inspiration_corpus_path", type=str, default="", help="store title and abstract of the inspiration corpus; Should be a json file in a format of [[title, abstract], ...]; It will be automatically assigned with a default value if it is not assigned by users. The default value is './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size). (The default value is the groundtruth inspiration papers for the Tomato-Chem Benchmark and random high-quality papers)")
     parser.add_argument("--hypothesis_dir", type=str, default="./Checkpoints/hypothesis_generation_gpt4_bkgid_0.json")
     parser.add_argument("--output_dir", type=str, default="./Checkpoints/hypothesis_evaluation_results.json")
     parser.add_argument("--if_save", type=int, default=0, help="whether save grouping results")
@@ -228,9 +228,9 @@ if __name__ == '__main__':
     assert args.if_save in [1]
     assert args.if_load_from_saved in [0, 1]
     assert args.if_with_gdth_hyp_annotation in [0, 1]
-    # change args.title_abstract_all_insp_literature_path to the default value if it is not assigned by users
-    if args.title_abstract_all_insp_literature_path == "":
-        args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
+    # change args.custom_inspiration_corpus_path to the default value if it is not assigned by users
+    if args.custom_inspiration_corpus_path == "":
+        args.custom_inspiration_corpus_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
     else:
         # if not use the official inspiration corpus, we assume there would not be any groundtruth annotations for the hypothesis; else it's possible for both cases
         print("INFO: no groundtruth hypothesis annotation is provided, so we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")

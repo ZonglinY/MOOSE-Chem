@@ -39,7 +39,7 @@ class HypothesisGenerationEA(object):
         ## Load inspiration corpus (by default is the groundtruth inspiration papers and random high-quality papers)
         # title_abstract_collector: [[title, abstract], ...]
         # dict_title_2_abstract: {'title': 'abstract', ...}
-        self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.title_abstract_all_insp_literature_path)
+        self.title_abstract_collector, self.dict_title_2_abstract = load_dict_title_2_abstract(title_abstract_collector_path=args.custom_inspiration_corpus_path)
         ## Load the selected inspirations from the inspiration corpus (results from inspiration_screening.py)
         if args.if_use_gdth_insp == 0:
             # organized_insp: {'bq': [[title, reason], [title, reason], ...]}
@@ -889,7 +889,8 @@ if __name__ == "__main__":
     parser.add_argument("--chem_annotation_path", type=str, default="./chem_research_2024.xlsx", help="store annotated background research questions and their annotated groundtruth inspiration paper titles")
     parser.add_argument("--if_use_background_survey", type=int, default=1, help="whether use background survey. 0: not use (replace the survey as 'Survey not provided. Please overlook the survey.'); 1: use")
     parser.add_argument("--if_use_strict_survey_question", type=int, default=1, help="whether to use the strict version of background survey and background question. strict version means the background should not have any close information to inspirations and the hypothesis, even if the close information is a commonly used method in that particular background question domain.")
-    parser.add_argument("--title_abstract_all_insp_literature_path", type=str, default="", help="store title and abstract of the inspiration corpus; Should be a json file in a format of [[title, abstract], ...]; It will be automatically assigned with a default value if it is not assigned by users. The default value is './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size). (The default value is the groundtruth inspiration papers for the Tomato-Chem Benchmark and random high-quality papers)")
+    parser.add_argument("--custom_research_background_path", type=str, default="", help="the path to the research background file. The format is [research question, background survey], and saved in a json file. ")
+    parser.add_argument("--custom_inspiration_corpus_path", type=str, default="", help="store title and abstract of the inspiration corpus; Should be a json file in a format of [[title, abstract], ...]; It will be automatically assigned with a default value if it is not assigned by users. The default value is './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size). (The default value is the groundtruth inspiration papers for the Tomato-Chem Benchmark and random high-quality papers)")
     parser.add_argument("--inspiration_dir", type=str, default="./Checkpoints/coarse_inspiration_search_gpt4.json;", help="store coarse-grained inspiration screening results")
     parser.add_argument("--output_dir", type=str, default="./Checkpoints/hypothesis_generation_results.json")
     parser.add_argument("--if_save", type=int, default=0, help="whether save grouping results")
@@ -950,9 +951,6 @@ if __name__ == "__main__":
     assert args.num_screening_keep_size in [3]
     assert args.if_use_gdth_insp in [0, 1]
     assert args.if_consider_external_knowledge_feedback_during_second_refinement in [0, 1]
-    # change args.title_abstract_all_insp_literature_path to the default value if it is not assigned by users
-    if args.title_abstract_all_insp_literature_path == "":
-        args.title_abstract_all_insp_literature_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
     assert args.baseline_type in [0, 1, 2, 3]
     if args.baseline_type not in [0, 3]:
         print("Warning: Running baseline {}..".format(args.baseline_type))
@@ -971,8 +969,28 @@ if __name__ == "__main__":
     builtins.print = custom_print
     print("args: ", args)
 
-    # initialize custom_rq and custom_bs to text to use them for inference (but not those in the Tomato-Chem benchmark)
-    custom_rq, custom_bs = None, None
+    ## initialize research question and background survey to text to use them for inference (by default they are set to those in the Tomato-Chem benchmark)
+    if args.custom_research_background_path == "":
+        custom_rq, custom_bs = None, None
+        print("Using the research background in the Tomato-Chem benchmark.")
+    else:
+        assert os.path.exists(args.custom_research_background_path), "The research background file does not exist: {}".format(args.custom_research_background_path)
+        with open(args.custom_research_background_path, 'r') as f:
+            research_background = json.load(f)
+        # research_background: [research question, background survey]
+        assert len(research_background) == 2
+        assert isinstance(research_background[0], str) and isinstance(research_background[1], str)
+        custom_rq = research_background[0]
+        custom_bs = research_background[1]
+        print("Using custom research background. \nResearch question: \n{}; \n\nBackground survey: \n{}".format(custom_rq, custom_bs))
+
+    ## change inspiration corpus path to the default corpus if it is not assigned by users
+    if args.custom_inspiration_corpus_path == "":
+        args.custom_inspiration_corpus_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
+        print("Using the default inspiration corpus: {}".format(args.custom_inspiration_corpus_path))
+    else:
+        assert os.path.exists(args.custom_inspiration_corpus_path), "The inspiration corpus file does not exist: {}".format(args.custom_inspiration_corpus_path)
+        print("Using custom inspiration corpus: {}".format(args.custom_inspiration_corpus_path))
 
 
     start_time = time.time()
