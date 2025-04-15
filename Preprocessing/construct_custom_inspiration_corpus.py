@@ -1,16 +1,16 @@
-import os, json
+import os, json, argparse
 import pandas as pd
 
 
-# root_data_dir: the directory where the xls/xlsx files are stored
-def load_title_abstract(root_data_dir, save_dir):
-    files = os.listdir(root_data_dir)
+# raw_data_dir: the directory where the xls/xlsx files are stored
+def load_title_abstract(raw_data_dir, custom_inspiration_corpus_path):
+    files = os.listdir(raw_data_dir)
 
     all_ttl_abs = []
     for cur_file in files:
         if not (cur_file.endswith('.xlsx') or cur_file.endswith('.xls')) or cur_file.startswith('.~'):
             continue 
-        cur_file_full_path = os.path.join(root_data_dir, cur_file)
+        cur_file_full_path = os.path.join(raw_data_dir, cur_file)
         cur_ttl_abs = []
         print("cur_file_full_path:", cur_file_full_path)
         if cur_file.endswith('.xlsx'):
@@ -41,7 +41,7 @@ def load_title_abstract(root_data_dir, save_dir):
     print("all_ttl_abs[0]:", all_ttl_abs[0])
 
     # save to json file
-    with open(save_dir, 'w') as f:
+    with open(custom_inspiration_corpus_path, 'w') as f:
         json.dump(all_ttl_abs, f, indent=4)
     return all_ttl_abs
 
@@ -51,6 +51,9 @@ def load_title_abstract(root_data_dir, save_dir):
 
 
 if __name__ == "__main__":
-    root_data_dir = ""
-    save_dir = ""
-    load_title_abstract(root_data_dir, save_dir)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--raw_data_dir", type=str, default="", help="the path to the raw data directory")
+    parser.add_argument("--custom_inspiration_corpus_path", type=str, default="./custom_inspiration_corpus.json", help="path to the custom inspiration corpus file (which is a json file, and will be used as input to the MOOSE-Chem framework)")
+    args = parser.parse_args()
+
+    load_title_abstract(args.raw_data_dir, args.custom_inspiration_corpus_path)

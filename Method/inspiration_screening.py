@@ -240,7 +240,7 @@ if __name__ == '__main__':
     # args.output_dir = os.path.abspath(args.output_dir)
 
     ## initialize research question and background survey to text to use them for inference (by default they are set to those in the Tomato-Chem benchmark)
-    if args.custom_research_background_path == "":
+    if args.custom_research_background_path.strip() == "":
         custom_rq, custom_bs = None, None
         print("Using the research background in the Tomato-Chem benchmark.")
     else:
@@ -255,7 +255,7 @@ if __name__ == '__main__':
         print("Using custom research background. \nResearch question: \n{}; \n\nBackground survey: \n{}".format(custom_rq, custom_bs))
 
     ## change inspiration corpus path to the default corpus if it is not assigned by users
-    if args.custom_inspiration_corpus_path == "":
+    if args.custom_inspiration_corpus_path.strip() == "":
         args.custom_inspiration_corpus_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
         print("Using the default inspiration corpus: {}".format(args.custom_inspiration_corpus_path))
     else:

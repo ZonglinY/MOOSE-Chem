@@ -229,7 +229,7 @@ if __name__ == '__main__':
     assert args.if_load_from_saved in [0, 1]
     assert args.if_with_gdth_hyp_annotation in [0, 1]
     # change args.custom_inspiration_corpus_path to the default value if it is not assigned by users
-    if args.custom_inspiration_corpus_path == "":
+    if args.custom_inspiration_corpus_path.strip() == "":
         args.custom_inspiration_corpus_path = './Data/Inspiration_Corpus_{}.json'.format(args.corpus_size)
     else:
         # if not use the official inspiration corpus, we assume there would not be any groundtruth annotations for the hypothesis; else it's possible for both cases
