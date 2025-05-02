@@ -246,10 +246,14 @@ Then run `bash main.sh`.
 
 ```Assumption1-RetrieveUnseen.sh``` and ```Assumption2-Reason2Unknown.sh``` contain combinations of these three basic commands (with different arg parameters) to investigate LLMs' ability on these three aspects.
 
+---
+
 ## Analysis
 
 ```./Analysis/analysis.py``` can be used to analyze the results of the three stages. 
 This [link](https://drive.google.com/file/d/1WdnB5Ztb4n3DNfwJeE9GJW-BJvdoWmNN/view?usp=sharing) stores the result files from all the experiments mentioned in the paper. They can be used with ```analysis.py``` to display the experiment results reported in the paper.
+
+---
 
 ## An Example
 
@@ -271,6 +275,7 @@ Here we present a rediscovered hypothesis from MOOSE-Chem, with input:
 
 The proposed hypothesis effectively covers two key points from the ground truth hypothesis: **the incorporation of ruthenium (Ru) and the use of D_2O as a deuterium source** within the electrocatalytic system. However, the current content does not detail the mechanism by which Ru-D is produced, which is essential for explaining the process of reductive deuteration. Nevertheless, the results are still insightful. The specific level of nitrogen doping, for example, is highly suggestive and warrants further investigation. Overall, the match remains strong in its alignment with the original hypothesis while also presenting opportunities for deeper exploration.
 
+---
 
 ## Bib Info
 If you found this repository useful, please consider 📑citing:
