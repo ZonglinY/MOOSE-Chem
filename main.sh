@@ -33,22 +33,22 @@ custom_inspiration_corpus_path=""
 # ## Custom Research Background Dumping 
 # #   if use custom research background, please modify the 'research_question' and 'background_survey' in research_background_to_json() function in custom_research_background_dumping_and_output_displaying.py
 # python -u ./Preprocessing/custom_research_background_dumping_and_output_displaying.py --io_type 0 \
-#         --custom_research_background_path ${custom_research_background_path} \
-#         --evaluate_output_dir ${checkpoint_root_dir}/evaluation_${model_name_eval}_${output_dir_postfix}.json \
-#         --display_dir ${display_txt_file_path}
+#         --custom_research_background_path ${custom_research_background_path} 
 
 
 
-## Custom Inspiration Corpus Dumping
-python -u ./Preprocessing/construct_custom_inspiration_corpus.py \
-        --raw_data_dir ${custom_raw_inspiration_data_dir} \
-        --custom_inspiration_corpus_path ${custom_inspiration_corpus_path}
+# ## Custom Inspiration Corpus Dumping
+# python -u ./Preprocessing/construct_custom_inspiration_corpus.py \
+#         --raw_data_dir ${custom_raw_inspiration_data_dir} \
+#         --custom_inspiration_corpus_path ${custom_inspiration_corpus_path}
 
 
 
 ## Inspiration Retrieval
-# --custom_research_background_path (storing research question and background survey; if not provided, use the default ones in TOMATO-Bench)
-# --custom_inspiration_corpus_path (if not provided, use the default one involving args.corpus_size)
+# --custom_research_background_path: Path to custom research question and background survey.
+#    Leave empty ("") to use the default from TOMATO-Bench.
+# --custom_inspiration_corpus_path: Path to custom inspiration corpus.
+#    Leave empty ("") to use the default corpus controlled by --corpus_size.
 python -u ./Method/inspiration_screening.py --model_name ${model_name_insp_retrieval} \
         --api_type 1 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx \
@@ -62,8 +62,10 @@ python -u ./Method/inspiration_screening.py --model_name ${model_name_insp_retri
 
 
 ## Hypothesis Composition
-# --custom_research_background_path (storing research question and background survey; if not provided, use the default ones in TOMATO-Bench)
-# --custom_inspiration_corpus_path (if not provided, use the default one involving args.corpus_size)
+# --custom_research_background_path: Path to custom research question and background survey.
+#    Leave empty ("") to use the default from TOMATO-Bench.
+# --custom_inspiration_corpus_path: Path to custom inspiration corpus.
+#    Leave empty ("") to use the default corpus controlled by --corpus_size.
 python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
         --api_type 1 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 150 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
@@ -81,7 +83,8 @@ python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
 
 
 ## Hypothesis Ranking
-# --custom_inspiration_corpus_path (if not provided, use the default one involving args.corpus_size)
+# --custom_inspiration_corpus_path: Path to custom inspiration corpus.
+#    Leave empty ("") to use the default corpus controlled by --corpus_size.
 python -u ./Method/evaluate.py --model_name ${model_name_eval} \
         --api_type 1 --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 150 \
@@ -95,7 +98,6 @@ python -u ./Method/evaluate.py --model_name ${model_name_eval} \
 
 # ## Hypothesis Display
 # python -u ./Preprocessing/custom_research_background_dumping_and_output_displaying.py --io_type 1 \
-#         --custom_research_background_path ${custom_research_background_path} \
 #         --evaluate_output_dir ${checkpoint_root_dir}/evaluation_${model_name_eval}_${output_dir_postfix}.json \
 #         --display_dir ${display_txt_file_path}
 
