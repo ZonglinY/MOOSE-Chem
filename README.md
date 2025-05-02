@@ -52,7 +52,7 @@ pip install -r requirements.txt
 
 ---
 
-### 📋 Step 1: (Optional) Provide Custom Research Background — or Use the Default Benchmark
+## 📋 Step 1: (Optional) Provide Custom Research Background — or Use the Default Benchmark
 
 You can supply your own `research_question` and `background_survey` as input. Otherwise, the system will use a built-in benchmark.
 
@@ -80,7 +80,7 @@ Then run `bash main.sh`.
 ---
 
 
-### 📋 Step 2: (Optional) Use a Custom Inspiration Corpus — or Stick with the Default
+## 📋 Step 2: (Optional) Use a Custom Inspiration Corpus — or Stick with the Default
 
 You can provide your own inspiration corpus (titles and abstracts) to set up the hypothesis search space. If not provided, the system will use the default ones in the benchmark dataset.
 
@@ -108,7 +108,7 @@ Then run `bash main.sh`.
 
 ---
 
-### 🔍 Step 3: Inspiration Retrieval
+## 🔍 Step 3: Inspiration Retrieval
 
 This step retrieves relevant literature snippets to serve as inspiration for hypothesis generation.
 
