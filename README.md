@@ -6,6 +6,7 @@
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/cloudposse.svg?style=social&label=Follow%20%40Us)](https://x.com/Yang_zy223)
 [![GitHub Repo stars](https://img.shields.io/github/stars/ZonglinY/MOOSE-Chem%20)](https://github.com/ZonglinY/MOOSE-Chem)
 [![arXiv](https://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2410.07076)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypothesis discovery. 
 
@@ -80,17 +81,40 @@ Then run `bash main.sh`.
 ---
 
 
+
 ## 📋 Step 2: (Optional) Use a Custom Inspiration Corpus — or Stick with the Default
 
 You can provide your own inspiration corpus (titles and abstracts) to set up the hypothesis search space. If not provided, the system will use the default ones in the benchmark dataset.
 
-#### To provide a custom corpus:
+### ✅ Two Ways to Provide a Custom Corpus:
 
-1. **Prepare Data**  
-   Download titles and abstracts from Web of Science and save the `.xlsx` or `.xls` files into a single folder.
+#### **Option 1**: Manually Compose Your Own
+
+Prepare a list of papers and save them in the following format:
+
+```python
+[[title1, abstract1], [title2, abstract2], ...]
+```
+
+Save this to the path specified by `custom_inspiration_corpus_path`.
+
+---
+
+#### **Option 2**: Use Web of Science to Download in Bulk
+
+1. **Prepare the Raw Data**
+   * Use [Web of Science](https://www.webofscience.com/wos/woscc/summary/0d1f66e0-aebb-4b29-a6c8-d685e04c2ea9-015bae6080/relevance/1) to search for papers by journal name and optionally filter with keywords.
+   * Select the desired papers by checking their boxes.
+   * Click **"Export"** in the top menu.
+   * Choose **"Excel"** as the format.
+   * Set **"Record Content"** to **"Author, Title, Source, Abstract"**
+   * Click **"Export"** to download the file (The file should have a `.xlsx` or `.xls` extension).
+
+   Save all `.xlsx` or `.xls` files into a single folder for further processing.
+
 
 2. **Edit `main.sh`**  
-   - Set `custom_raw_inspiration_data_dir` to the folder path containing your files  
+   - Set `custom_raw_inspiration_data_dir` to the folder path containing your `.xlsx` or `.xls` files  
    - Set `custom_inspiration_corpus_path` to the desired output path for the processed inspiration corpus  
    - Comment out all other Python commands **except** the one below
 
@@ -101,7 +125,11 @@ python -u ./Preprocessing/construct_custom_inspiration_corpus.py \
     --custom_inspiration_corpus_path ${custom_inspiration_corpus_path}
 ```
 
-Then run `bash main.sh`.
+3. **Run the Script**
+
+   ```bash
+   bash main.sh
+   ```
 
 > ✅ Once done, this will generate a custom inspiration corpus file that can be used in later steps.
 
@@ -283,9 +311,13 @@ If you found this repository useful, please consider 📑citing:
 	@article{yang2024moose,
 	  title={MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses},
 	  author={Yang, Zonglin and Liu, Wanhao and Gao, Ben and Xie, Tong and Li, Yuqiang and Ouyang, Wanli and Poria, Soujanya and Cambria, Erik and Zhou, Dongzhan},
-	  journal={arXiv preprint arXiv:2410.07076},
-	  year={2024}
+	  booktitle={Proceedings of the International Conference on Learning Representations (ICLR)},
+	  year={2025}
 	}
 
 
+---
 
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
