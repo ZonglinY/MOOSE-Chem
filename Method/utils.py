@@ -494,11 +494,15 @@ def llm_generation(prompt, model_name, client, temperature=1.0):
 #   llm inference with the prompt + guarantee to reply a structured generation accroding to the template (guarantee by the while loop)
 #   gene_format_constraint: [id of structured gene to comply with the constraint, constraint (['Yes', 'No'], where the content in the id of structured gene should be inside the constraint)]
 #   if_only_return_one_structured_gene_component: True or False; most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]]). When it is True, this function will only return the first element of structured_gene. If it is set to true and structured_gene has more than one component, a warning will be raised
-def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, restructure_output_model_name="gpt-4o-mini"):
+def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, restructure_output_model_name=None):
     # assertions
     assert if_structured_generation in [True, False]
     if if_structured_generation:
         assert template is not None
+    if restructure_output_model_name == None:
+        restructure_output_model_name = model_name
+    else:
+        print(f"Warning: restructure_output_model_name is set to {restructure_output_model_name}, which is different from model_name: {model_name}.")
 
     # while loop to make sure there will be one successful generation
     while True:
@@ -538,7 +542,7 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
 
 
 
-def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name="gpt-4o-mini"):
+def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name):
     assert isinstance(gene, str), print("type(gene): ", type(gene))
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
     gene = re.sub("[#*]", "", gene).strip()
