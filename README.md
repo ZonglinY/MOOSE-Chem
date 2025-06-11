@@ -41,15 +41,31 @@ In general, **MOOSE-Chem** contains three stages:
 The commands for the three stages are introduced after the "quick start".
 
 --- 
+
 ## ⚡ Step 0: Quick Start
 
-```
+```bash
 git clone https://github.com/ZonglinY/MOOSE-Chem.git
 cd MOOSE-Chem
 conda create -n msc python=3.8
 conda activate msc
 pip install -r requirements.txt
 ```
+
+Then, open `main.sh` and configure the following parameters:
+
+* `api_type`
+* `api_key`
+* `base_url`
+* `model_name_insp_retrieval`
+* `model_name_gene`
+* `model_name_eval`
+
+> 🔧 **Note:**
+> Set `api_type` to `0` if you're using an OpenAI API key, and to `1` if you're using an Azure OpenAI API key.
+>
+> 💡 **Tip:**
+> You can assign the same model name to all three tasks (`model_name_insp_retrieval`, `model_name_gene`, and `model_name_eval`).
 
 ---
 
