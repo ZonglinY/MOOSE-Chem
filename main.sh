@@ -8,7 +8,8 @@
 #SBATCH --gres=gpu:0
 
 
-
+# api_type: Set to 0 for OpenAI API key, or 1 for Azure OpenAI API key.
+api_type=
 api_key="sk-"
 base_url=""
 
@@ -50,7 +51,7 @@ custom_inspiration_corpus_path=""
 # --custom_inspiration_corpus_path: Path to custom inspiration corpus.
 #    Leave empty ("") to use the default corpus controlled by --corpus_size.
 python -u ./Method/inspiration_screening.py --model_name ${model_name_insp_retrieval} \
-        --api_type 1 --api_key ${api_key} --base_url ${base_url} \
+        --api_type ${api_type} --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx \
         --output_dir ${checkpoint_root_dir}/coarse_inspiration_search_${model_name_insp_retrieval}_${output_dir_postfix}.json \
         --corpus_size 150 --if_use_background_survey 1 --if_use_strict_survey_question 1 \
@@ -67,7 +68,7 @@ python -u ./Method/inspiration_screening.py --model_name ${model_name_insp_retri
 # --custom_inspiration_corpus_path: Path to custom inspiration corpus.
 #    Leave empty ("") to use the default corpus controlled by --corpus_size.
 python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
-        --api_type 1 --api_key ${api_key} --base_url ${base_url} \
+        --api_type ${api_type} --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 150 --if_use_strict_survey_question 1 --if_use_background_survey 1 \
         --inspiration_dir ${checkpoint_root_dir}/coarse_inspiration_search_${model_name_insp_retrieval}_${output_dir_postfix}.json \
         --output_dir ${checkpoint_root_dir}/hypothesis_generation_${model_name_gene}_${output_dir_postfix}.json \
@@ -86,7 +87,7 @@ python -u ./Method/hypothesis_generation.py --model_name ${model_name_gene} \
 # --custom_inspiration_corpus_path: Path to custom inspiration corpus.
 #    Leave empty ("") to use the default corpus controlled by --corpus_size.
 python -u ./Method/evaluate.py --model_name ${model_name_eval} \
-        --api_type 1 --api_key ${api_key} --base_url ${base_url} \
+        --api_type ${api_type} --api_key ${api_key} --base_url ${base_url} \
         --chem_annotation_path ./Data/chem_research_2024.xlsx --corpus_size 150 \
         --hypothesis_dir ${checkpoint_root_dir}/hypothesis_generation_${model_name_gene}_${output_dir_postfix}.json \
         --output_dir ${checkpoint_root_dir}/evaluation_${model_name_eval}_${output_dir_postfix}.json \
@@ -106,7 +107,7 @@ python -u ./Method/evaluate.py --model_name ${model_name_eval} \
 
 ## Analysis: Ranking Groundtruth Hypothesis Between Generated Hypothesis
 # python -u ./Analysis/groundtruth_hyp_ranking.py --model_name ${model_name} \
-#         --api_type 0 --api_key ${api_key} --base_url ${base_url} \
+#         --api_type ${api_type} --api_key ${api_key} --base_url ${base_url} \
 #         --evaluate_result_dir ${checkpoint_root_dir}/evaluation_${model_name}_corpus_150_survey_1_gdthInsp_1_intraEA_1_interEA_1_bkgid_ \
 #         --if_save 1 --output_dir ${checkpoint_root_dir}/groundtruth_hypothesis_automatic_scores_four_aspects_${model_name}.json
 
