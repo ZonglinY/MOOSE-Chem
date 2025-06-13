@@ -502,7 +502,8 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
     if restructure_output_model_name == None:
         restructure_output_model_name = model_name
     else:
-        print(f"Warning: restructure_output_model_name is set to {restructure_output_model_name}, which is different from model_name: {model_name}.")
+        if restructure_output_model_name != model_name:
+            print(f"Warning: restructure_output_model_name is set to {restructure_output_model_name}, which is different from model_name: {model_name}.")
 
     # while loop to make sure there will be one successful generation
     while True:
