@@ -227,7 +227,7 @@ class HypothesisGenerationEA(object):
                 selected_other_mutations = other_mutations
             elif len(other_mutations) <= self.args.num_screening_window_size:
                 # selected_other_mutations: a subset of other_mutations; [[insp_title0, insp_abstract0, hyp0], [insp_title1, insp_abstract1, hyp1], ...]
-                selected_other_mutations = self.additional_round_inspiration_screening(backgroud_question, backgroud_survey, cur_insp_core_node, other_mutations=other_mutations, this_mutation=this_mutation)
+                selected_other_mutations = self.additional_round_inspiration_screening(backgroud_question, backgroud_survey, cur_insp_core_node, other_mutations=other_mutations, this_mutation=this_mutation, num_screening_keep_size=self.args.num_screening_keep_size)
             else:
                 num_screening_itr = math.ceil(len(other_mutations) / self.args.num_screening_window_size)
                 selected_other_mutations = []
@@ -237,7 +237,7 @@ class HypothesisGenerationEA(object):
                     if len(cur_other_mutations) <= self.args.num_screening_keep_size:
                         cur_selected_other_mutations = cur_other_mutations
                     else:
-                        cur_selected_other_mutations = self.additional_round_inspiration_screening(backgroud_question, backgroud_survey, cur_insp_core_node, other_mutations=cur_other_mutations, this_mutation=this_mutation)    
+                        cur_selected_other_mutations = self.additional_round_inspiration_screening(backgroud_question, backgroud_survey, cur_insp_core_node, other_mutations=cur_other_mutations, this_mutation=this_mutation, num_screening_keep_size=self.args.num_screening_keep_size)    
                     selected_other_mutations += cur_selected_other_mutations
                     print("\tlen(cur_selected_other_mutations): {}".format(len(cur_selected_other_mutations)))
                     if len(cur_selected_other_mutations) == 0:
@@ -272,11 +272,13 @@ class HypothesisGenerationEA(object):
     # cur_insp_core_node: [title, reason, abstract]
     # other_mutations: [[insp_title0, insp_abstract0, hyp0], [insp_title1, insp_abstract1, hyp1], ...]
     # this_mutation: text of a hypothesis (already developed based on cur_insp_core_node)
+    # num_screening_keep_size: int; the number of inspirations to select from the window of other_mutations
     ## Output
     # selected_other_mutations: a subset of other_mutations; [[insp_title0, insp_abstract0, hyp0], [insp_title1, insp_abstract1, hyp1], ...]
-    def additional_round_inspiration_screening(self, backgroud_question, backgroud_survey, cur_insp_core_node, other_mutations, this_mutation):
+    def additional_round_inspiration_screening(self, backgroud_question, backgroud_survey, cur_insp_core_node, other_mutations, this_mutation, num_screening_keep_size):
+        assert num_screening_keep_size < len(other_mutations)
         # prompts
-        prompts = instruction_prompts("additional_round_inspiration_screening")
+        prompts = instruction_prompts("additional_round_inspiration_screening", more_info=num_screening_keep_size)
         assert len(prompts) == 6
         # cur_insp_core_node_prompt
         cur_insp_core_node_prompt = "Title: {}; Abstract: {}.".format(cur_insp_core_node[0], cur_insp_core_node[2])
@@ -947,8 +949,6 @@ if __name__ == "__main__":
     assert args.if_mutate_inside_same_bkg_insp in [0, 1]
     assert args.if_mutate_between_diff_insp in [0, 1]
     assert args.if_self_explore in [0, 1]
-    # currently cannot adjust corresponding prompts by args.num_screening_keep_size (default prompt is three, else need to change the prompt)
-    assert args.num_screening_keep_size in [3]
     assert args.if_use_gdth_insp in [0, 1]
     assert args.if_consider_external_knowledge_feedback_during_second_refinement in [0, 1]
     assert args.baseline_type in [0, 1, 2, 3]
