@@ -234,7 +234,8 @@ if __name__ == '__main__':
     else:
         # if not use the official inspiration corpus, we assume there would not be any groundtruth annotations for the hypothesis; else it's possible for both cases
         print("INFO: no groundtruth hypothesis annotation is provided, so we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")
-        assert args.if_with_gdth_hyp_annotation == 0
+        if args.if_with_gdth_hyp_annotation != 0:
+            print("Warning: using custom inspiration corpus, but requiring to evaluate the hypotheses with groundtruth hypothesis annotation.")
 
     ## Setup logger
     logger = setup_logger(args.output_dir)
