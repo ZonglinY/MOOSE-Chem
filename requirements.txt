@@ -11,3 +11,4 @@ scipy
 numpy
 openai
 openpyxl
+google-genai

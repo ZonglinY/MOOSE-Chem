@@ -47,7 +47,7 @@ The commands for the three stages are introduced after the "quick start".
 ```bash
 git clone https://github.com/ZonglinY/MOOSE-Chem.git
 cd MOOSE-Chem
-conda create -n msc python=3.8
+conda create -n msc python=3.10
 conda activate msc
 pip install -r requirements.txt
 ```

@@ -4,6 +4,7 @@ from openai import OpenAI, AzureOpenAI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Method.utils import load_chem_annotation, instruction_prompts, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold, exchange_order_in_list
 from Method.logging_utils import setup_logger
+from google import genai
 
 class Evaluate(object):
 
@@ -20,6 +21,9 @@ class Evaluate(object):
                 api_key=args.api_key,  
                 api_version="2024-06-01"
             )
+        # google client
+        elif args.api_type == 2:
+            self.client = genai.Client(api_key=args.api_key)
         else:
             raise NotImplementedError
         # annotated bkg research question and its annotated groundtruth inspiration paper titles
@@ -158,7 +162,7 @@ class Evaluate(object):
         prompts = instruction_prompts('eval_matched_score')
         full_prompt = prompts[0] + gene_hyp + prompts[1] + gold_hyp + prompts[2] + keypoints + prompts[3]
         # structured_gene: [matched_score, reason]
-        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Reason:', 'Matched score:'], temperature=0.0, restructure_output_model_name=self.args.model_name)
+        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Reason:', 'Matched score:'], temperature=0.0, restructure_output_model_name=self.args.model_name, api_type=self.args.api_type)
         structured_gene = exchange_order_in_list(structured_gene)
         return structured_gene
         
@@ -223,7 +227,7 @@ if __name__ == '__main__':
     parser.add_argument("--if_with_gdth_hyp_annotation", type=int, default=1, help="whether we have groundtruth hypothesis annotation to calculate the matched score and following analysis. If we don't have groundtruth hypothesis annotation, here we only rank the generated hypotheses based on their automatic evaluation scores given by LLMs (validness, novelty, significance, and potential), but not calculate the matched score and do following analysis.")
     args = parser.parse_args()
 
-    assert args.api_type in [0, 1]
+    assert args.api_type in [0, 1, 2]
     assert args.if_use_strict_survey_question in [0, 1]
     assert args.if_save in [1]
     assert args.if_load_from_saved in [0, 1]

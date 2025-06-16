@@ -3,6 +3,8 @@ from openai import OpenAI, AzureOpenAI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Method.utils import instruction_prompts, load_chem_annotation, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation_while_loop, exchange_order_in_list
 from Method.logging_utils import setup_logger
+from google import genai
+
 
 
 # Coarse grained inspiration screening
@@ -23,6 +25,8 @@ class Screening(object):
                 api_key=args.api_key,  
                 api_version="2024-06-01"
             )
+        elif args.api_type == 2:
+            self.client = genai.Client(api_key=args.api_key)
         else:
             raise NotImplementedError
         ## Load research background: Use the research question and background survey in Tomato-Chem or the custom ones from input
@@ -140,7 +144,7 @@ class Screening(object):
                 full_prompt = prompts[0] + bkg_research_question + prompts[1] + backgroud_survey + prompts[2] + cur_title_abstract_pairs_prompt + prompts[3]
                 # cur_structured_gene: [[Title, Reason], [Title, Reason], ...]
                 # Use zero temperature to escavate heuristics in the model the most 
-                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, restructure_output_model_name=self.args.model_name)  
+                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, restructure_output_model_name=self.args.model_name, api_type=self.args.api_type)  
                 # cur_structured_gene = exchange_order_in_list(cur_structured_gene)
             else:
                 cur_structured_gene = [[cur_title_abstract_pairs[cur_ta_id][0], "Less than num_screening_keep_size, so keep them without screening."] for cur_ta_id in range(len(cur_title_abstract_pairs))]
@@ -227,7 +231,7 @@ if __name__ == '__main__':
     parser.add_argument("--corpus_size", type=int, default=300, help="the number of total inspiration (paper) corpus (both groundtruth insp papers and non-groundtruth insp papers)")
     args = parser.parse_args()
 
-    assert args.api_type in [0, 1]
+    assert args.api_type in [0, 1, 2]
     # assert args.if_save in [0, 1]
     assert args.num_screening_window_size >= 10
     # currently cannot adjust corresponding prompts by args.num_screening_keep_size (default prompt is three, else need to change the prompt)

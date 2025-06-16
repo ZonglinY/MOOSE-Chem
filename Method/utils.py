@@ -1,5 +1,7 @@
 import os, re, json, random, time, math
 import pandas as pd
+from google.genai import types
+
 
 DISCIPLINE = "chemistry"
 # MUTATION_CUSTOM_GUIDE: is added to the prompt to mutate to a novel combination (hypothesis) between research background and an inspiration
@@ -474,21 +476,34 @@ def load_coarse_grained_hypotheses(coarse_grained_hypotheses_path):
 
 # Call Openai API,k input is prompt, output is response
 # model: by default is gpt3.5, can also use gpt4
-def llm_generation(prompt, model_name, client, temperature=1.0):
+def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
     # which model to use
     if_api_completed = False
     # start inference util we get generation
     while if_api_completed == False:
+        # print("api_type: ", api_type)   
         try:
-            completion = client.chat.completions.create(
-            model=model_name,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
-                ]
-            )
-            generation = completion.choices[0].message.content
+            if api_type in [0, 1]:
+                completion = client.chat.completions.create(
+                model=model_name,
+                temperature=temperature,
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                    ]
+                )
+                generation = completion.choices[0].message.content
+            elif api_type == 2:
+                response = client.models.generate_content(
+                    model=model_name, 
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        thinking_config=types.ThinkingConfig(thinking_budget=0)
+                    )
+                )
+                generation = response.text
+            else:
+                raise NotImplementedError
             if_api_completed = True
         except Exception as e:
             print("OpenAI reaches its rate limit: ", e)
@@ -500,7 +515,7 @@ def llm_generation(prompt, model_name, client, temperature=1.0):
 #   llm inference with the prompt + guarantee to reply a structured generation accroding to the template (guarantee by the while loop)
 #   gene_format_constraint: [id of structured gene to comply with the constraint, constraint (['Yes', 'No'], where the content in the id of structured gene should be inside the constraint)]
 #   if_only_return_one_structured_gene_component: True or False; most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]]). When it is True, this function will only return the first element of structured_gene. If it is set to true and structured_gene has more than one component, a warning will be raised
-def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, restructure_output_model_name=None):
+def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, restructure_output_model_name=None, api_type=0):
     # assertions
     assert if_structured_generation in [True, False]
     if if_structured_generation:
@@ -514,7 +529,7 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
     # while loop to make sure there will be one successful generation
     while True:
         try:
-            generation = llm_generation(prompt, model_name, client, temperature=temperature)
+            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
             # structured_gene
             if if_structured_generation:
                 # structured_gene: [[title, reason], [title, reason], ...]
@@ -524,7 +539,7 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
                     structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
                 except:
                     # print("Information to be extracted by an LLM from the LLM's generation")
-                    structured_gene = get_structured_generation_from_raw_generation_by_llm(generation, template=template, client=client, temperature=temperature, model_name=restructure_output_model_name)
+                    structured_gene = get_structured_generation_from_raw_generation_by_llm(generation, template=template, client=client, temperature=temperature, model_name=restructure_output_model_name, api_type=api_type)
                 if gene_format_constraint != None:
                     assert len(gene_format_constraint) == 2, print("gene_format_constraint: ", gene_format_constraint)
                     # we use structured_gene[0] here since most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]])
@@ -549,7 +564,7 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
 
 
 
-def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name):
+def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name, api_type=0):
     assert isinstance(gene, str), print("type(gene): ", type(gene))
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
     gene = re.sub("[#*]", "", gene).strip()
@@ -562,7 +577,7 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
     # while loop to make sure there will be one successful generation
     while True:
         try:
-            generation = llm_generation(prompt, model_name, client, temperature=temperature)
+            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
             # print("generation (in): ", generation)
             structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
             # print("structured_gene (in): ", structured_gene)
