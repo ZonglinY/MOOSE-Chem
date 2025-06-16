@@ -575,15 +575,16 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
     # print("prompt: ", prompt)
     
     # while loop to make sure there will be one successful generation
-    while True:
+    max_trials = 50
+    for cur_trial in range(max_trials):
         try:
             generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
             # print("generation (in): ", generation)
             structured_gene = get_structured_generation_from_raw_generation(generation, template=template)
             # print("structured_gene (in): ", structured_gene)
-            break
+            return structured_gene
         except Exception as e:
-            if temperature < 1.5:
+            if temperature < 2.0:
                 temperature += 0.25
             # if temperature >= 0.7:
             #     model_name = "gpt-4o"
@@ -593,7 +594,7 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
             print("Exception (in): {}, try again..".format(repr(e)))
             print(f"update temperature to {temperature} and use {model_name} for extraction in case new generation can be successful..")
     # print("structured_gene: ", structured_gene)
-    return structured_gene
+    raise Exception("Failed to restructure the passage with the template after {} trials.".format(max_trials))
 
 
 
