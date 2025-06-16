@@ -7,7 +7,10 @@ DISCIPLINE = "chemistry"
 # MUTATION_CUSTOM_GUIDE: is added to the prompt to mutate to a novel combination (hypothesis) between research background and an inspiration
 MUTATION_CUSTOM_GUIDE = "You should be careful on adopting ML methods as the novel content of the mutation, since currently we are using ML examples to illustrate the derivation of hypothesis from research background and inspirations, and now it seems that the ML concepts can therefore easily be abused. "
 # HYPTHESIS_GENERATION_CUSTOM_GUIDE: is added to every prompt involving hypothesis generation
-HYPTHESIS_GENERATION_CUSTOM_GUIDE = "Please focus on formulating a detailed, valid, feasible, novel, and constructive hypothesis (possibly mainly in terms of the methodology) which will not cause any confusion or misunderstanding on any of its steps: the expected performance or the potential impact of the hypothesis is not the focus and should be mentioned less. "
+HYPTHESIS_GENERATION_CUSTOM_GUIDE = '''
+Please formulate a detailed, valid, feasible, novel, and constructive hypothesis, primarily emphasizing the methodology and mechanistic design. Each step in your hypothesis should be clear, precise, and free from ambiguity. The expected performance or potential impact of the hypothesis is not the main focus and should be mentioned minimally.
+The generated hypothesis must not exceed 600 words, but it can be shorter if conciseness doesn't sacrifice essential details (normally 600 words should be more than enough to describe the essential idea and essential details of a hypothesis). The hypothesis must remain concise yet comprehensive, clearly describing all essential chemical components, mechanistic steps, and key technical details, while avoiding unnecessary verbosity or redundant explanations of common scientific knowledge. If your initial hypothesis exceeds 600 words, try to compress it until it meets this constraint without omitting any critical information.
+'''
 
 
 # A collection of prompts for different modules
@@ -575,7 +578,7 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
     # print("prompt: ", prompt)
     
     # while loop to make sure there will be one successful generation
-    max_trials = 50
+    max_trials = 20
     for cur_trial in range(max_trials):
         try:
             generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
