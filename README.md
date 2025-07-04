@@ -324,7 +324,7 @@ The proposed hypothesis effectively covers two key points from the ground truth 
 ## Bib Info
 If you found this repository useful, please consider 📑citing:
 
-	@article{yang2024moose,
+	@inproceedings{yang2024moose,
 	  title={MOOSE-Chem: Large Language Models for Rediscovering Unseen Chemistry Scientific Hypotheses},
 	  author={Yang, Zonglin and Liu, Wanhao and Gao, Ben and Xie, Tong and Li, Yuqiang and Ouyang, Wanli and Poria, Soujanya and Cambria, Erik and Zhou, Dongzhan},
 	  booktitle={Proceedings of the International Conference on Learning Representations (ICLR)},
