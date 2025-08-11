@@ -478,24 +478,28 @@ def load_coarse_grained_hypotheses(coarse_grained_hypotheses_path):
     
 
 # Call Openai API,k input is prompt, output is response
-# model: by default is gpt3.5, can also use gpt4
 def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
-    # which model to use
-    if_api_completed = False
+    # print("prompt: ", prompt)
+    if "claude-3-haiku" in model_name:
+        max_tokens = 4096
+    else:
+        max_tokens = 8192
+    cnt_max_trials = 1
     # start inference util we get generation
-    while if_api_completed == False:
-        # print("api_type: ", api_type)   
+    for cur_trial in range(cnt_max_trials):
         try:
             if api_type in [0, 1]:
                 completion = client.chat.completions.create(
                 model=model_name,
                 temperature=temperature,
+                max_tokens=max_tokens,
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
                     ]
                 )
-                generation = completion.choices[0].message.content
+                generation = completion.choices[0].message.content.strip()
+            # google client
             elif api_type == 2:
                 response = client.models.generate_content(
                     model=model_name, 
@@ -504,13 +508,16 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
                         thinking_config=types.ThinkingConfig(thinking_budget=0)
                     )
                 )
-                generation = response.text
+                generation = response.text.strip()
             else:
                 raise NotImplementedError
-            if_api_completed = True
+            break
         except Exception as e:
-            print("OpenAI reaches its rate limit: ", e)
+            print("API Error occurred: ", e)
             time.sleep(0.25)
+            if cur_trial == cnt_max_trials - 1:
+                raise Exception("Failed to get generation after {} trials because of API error: {}.".format(cnt_max_trials, e))
+    # print("generation: ", generation)
     return generation
 
 
@@ -518,6 +525,7 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
 #   llm inference with the prompt + guarantee to reply a structured generation accroding to the template (guarantee by the while loop)
 #   gene_format_constraint: [id of structured gene to comply with the constraint, constraint (['Yes', 'No'], where the content in the id of structured gene should be inside the constraint)]
 #   if_only_return_one_structured_gene_component: True or False; most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]]). When it is True, this function will only return the first element of structured_gene. If it is set to true and structured_gene has more than one component, a warning will be raised
+#   restructure_output_model_name: the model name used to extract structured generation if the original generation does not match the template. It is set in case some used model (model_name) is not powerful enough to follow the template, and in this case we can still extract the desired structured generation by using a more powerful model (restructure_output_model_name) to extract the structured generation from the original generation
 def llm_generation_while_loop(prompt, model_name, client, if_structured_generation=False, template=None, gene_format_constraint=None, if_only_return_one_structured_gene_component=False, temperature=1.0, restructure_output_model_name=None, api_type=0):
     # assertions
     assert if_structured_generation in [True, False]
@@ -530,9 +538,12 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
             print(f"Warning: restructure_output_model_name is set to {restructure_output_model_name}, which is different from model_name: {model_name}.")
 
     # while loop to make sure there will be one successful generation
-    while True:
+    cnt_max_trials = 5
+    generation = None
+    for cur_trial in range(cnt_max_trials):
         try:
             generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+            # print("generation: ", generation)
             # structured_gene
             if if_structured_generation:
                 # structured_gene: [[title, reason], [title, reason], ...]
@@ -547,12 +558,14 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
                     assert len(gene_format_constraint) == 2, print("gene_format_constraint: ", gene_format_constraint)
                     # we use structured_gene[0] here since most of the time structured_gene will only have one component (eg, [[hyp, reasoning process]])
                     assert structured_gene[0][gene_format_constraint[0]].strip() in gene_format_constraint[1], print("structured_gene[0][gene_format_constraint[0]].strip(): {}; gene_format_constraint[1]: {}".format(structured_gene[0][gene_format_constraint[0]].strip(), gene_format_constraint[1]))
+                # print("structured_gene: ", structured_gene)
             break
         except Exception as e:
             # if the format of feedback is wrong, try again in the while loop
-            # print("generation: ", generation)
+            print("generation: ", generation)
             print("AssertionError: {}, try again..".format(repr(e)))
-            
+            if cur_trial == cnt_max_trials - 1:
+                raise Exception("Failed to get generation after {} trials because of Error: {}.".format(cnt_max_trials, e))
 
     # structured_gene
     if if_structured_generation:
@@ -564,10 +577,9 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
             return structured_gene
     else:
         return generation
+    
 
-
-
-def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name, api_type=0):
+def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name, api_type):
     assert isinstance(gene, str), print("type(gene): ", type(gene))
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
     gene = re.sub("[#*]", "", gene).strip()
@@ -578,7 +590,7 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
     # print("prompt: ", prompt)
     
     # while loop to make sure there will be one successful generation
-    max_trials = 20
+    max_trials = 10
     for cur_trial in range(max_trials):
         try:
             generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
@@ -589,6 +601,7 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
         except Exception as e:
             if temperature < 2.0:
                 temperature += 0.25
+            # Q: do not change to more powerful model, since different users might have different model_name (even for the same model)
             # if temperature >= 0.7:
             #     model_name = "gpt-4o"
             # if the format of feedback is wrong, try again in the while loop
@@ -598,7 +611,6 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
             print(f"update temperature to {temperature} and use {model_name} for extraction in case new generation can be successful..")
     # print("structured_gene: ", structured_gene)
     raise Exception("Failed to restructure the passage with the template after {} trials.".format(max_trials))
-
 
 
 
