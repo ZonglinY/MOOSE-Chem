@@ -8,9 +8,14 @@
 [![arXiv](https://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2410.07076)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypothesis discovery. 
+We introduce **MOOSE-Chem**, an LLM-based multi-agent framework for automated scientific hypothesis discovery.  
 
-With only LLMs with training data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (also only available online in 2024) with very high similarity, covering the main innovations.
+With only LLMs with training data up to October 2023, it has rediscovered many hypotheses published on Nature, Science, or similar levels in 2024 (also only available online in 2024) with very high similarity, covering the main innovations.
+
+The current experiments focus on chemistry and materials science, as these were the domains of our active collaborations at the time. However, the framework is **domain-agnostic**: to adapt it to another field, simply change the `DISCIPLINE` variable in `Method/utils.py`.  
+
+More analyses of this paradigm used in other disciplines are available in [ResearchBench](https://arxiv.org/abs/2503.21248). Complementary to MOOSE-Chem, its follow-up works are [MOOSE-Chem2](https://arxiv.org/abs/2505.19209) and [MOOSE-Chem3](https://arxiv.org/abs/2505.17873). 
+
 
 
 
@@ -62,7 +67,8 @@ Then, open `main.sh` and configure the following parameters:
 * `model_name_eval`
 
 > 🔧 **Note:**
-> Set `api_type` to `0` if you're using an OpenAI API key, and to `1` if you're using an Azure OpenAI API key.
+> Set `api_type` to `0` if you're using an OpenAI API key, to `1` if you're using an Azure OpenAI API key, or to `2` if you're using a Gemini API key.
+> This code fits better for non-reasoning LLMs (e.g., GPT4o/GPT4o-mini) because of its current design to extract answers from LLM's output.
 >
 > 💡 **Tip:**
 > You can assign the same model name to all three tasks (`model_name_insp_retrieval`, `model_name_gene`, and `model_name_eval`).
