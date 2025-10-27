@@ -8,7 +8,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-b31b1b.svg)](https://arxiv.org/abs/2410.07076)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated chemistry scientific hypothesis discovery. 
+We introduce **MOOSE-Chem**, which is an LLM-based multi-agent framework for automated scientific hypothesis discovery. 
 
 With only LLMs with training data up to October 2023, it has rediscovered many chemistry hypotheses published on Nature, Science, or similar levels in 2024 (also only available online in 2024) with very high similarity, covering the main innovations.
 
@@ -20,18 +20,20 @@ With only LLMs with training data up to October 2023, it has rediscovered many c
 
 The input to MOOSE-Chem can be as simple as only:
 
-&emsp;(1) *research question*: can be on any chemistry & material science domain;
+&emsp;(1) *research question*: can be any research question;
 
-&emsp;(2) *background survey*: (optionally) a several-paragraph-long survey describing the existing methods for the *research question*;
+&emsp;(2) *background survey*: a several-paragraph-long survey describing the existing methods for the *research question*;
 
-&emsp;(3) *inspiration corpus*: (this repo contains the default 3000 papers) title and abstract of many (random) chemistry papers that might serve as inspirations for the *research question*, preferably published on top venues.
+&emsp;(3) *inspiration corpus*: (this repo contains the default 3000 papers) title and abstract of many (random) papers that might serve as inspirations for the *research question*, preferably published on top venues.
 
-**MOOSE-Chem** can then output a list of ranked chemistry hypotheses (might take a few hours to "think") that could be both novel and valid.
+**MOOSE-Chem** can then output a list of ranked hypotheses (might take a few hours to "think") that could be both novel and valid.
+
+To apply **MOOSE-Chem** to disciplines beyond chemistry, simply update the `DISCIPLINE` variable in `./Method/utils.py` to your target domain.
 
 
 ---------- 
 
-This repo contains all the code of **MOOSE-Chem**, to help every chemistry lab to catalyze their chemistry scientific discovery process.
+This repo contains all the code of **MOOSE-Chem**, to help every lab to catalyze their scientific discovery process.
 
 In general, **MOOSE-Chem** contains three stages:  
 &emsp;(1) inspiration retrieval;  
@@ -62,7 +64,8 @@ Then, open `main.sh` and configure the following parameters:
 * `model_name_eval`
 
 > 🔧 **Note:**
-> Set `api_type` to `0` if you're using an OpenAI API key, and to `1` if you're using an Azure OpenAI API key.
+> 1. Set `api_type` to `0` if you're using an OpenAI API key, and to `1` if you're using an Azure OpenAI API key.
+> 2. The current code performs better with non-reasoning models such as GPT-4o or GPT-4o-mini, as its current answer extraction logic is specifically designed to align with the concise, non-reasoning outputs these models produce.
 >
 > 💡 **Tip:**
 > You can assign the same model name to all three tasks (`model_name_insp_retrieval`, `model_name_gene`, and `model_name_eval`).
