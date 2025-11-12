@@ -2,7 +2,7 @@ import os, sys, argparse, json, time, copy, math, builtins
 import numpy as np
 from openai import OpenAI, AzureOpenAI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Method.utils import load_chem_annotation, instruction_prompts, llm_generation_while_loop, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold, exchange_order_in_list
+from Method.utils import load_chem_annotation, instruction_prompts, llm_generation_with_extraction, recover_generated_title_to_exact_version_of_title, load_dict_title_2_abstract, if_element_in_list_with_similarity_threshold, exchange_order_in_list
 from Method.logging_utils import setup_logger
 from google import genai
 
@@ -147,7 +147,7 @@ class Evaluate(object):
                 cur_keypoints = self.dict_bkg2note[cur_background_question]
                 # cur_matched_score_and_reason: [matched_score, reason]
                 cur_matched_score_and_reason = self.evaluate_for_one_hypothesis(cur_hyp, cur_groundtruth_hyp, cur_keypoints)
-                ranked_hypothesis_collection_with_matched_score[cur_background_question].append(ranked_hypothesis_collection[cur_background_question][cur_id_hyp] + cur_matched_score_and_reason)
+                ranked_hypothesis_collection_with_matched_score[cur_background_question].append(ranked_hypothesis_collection[cur_background_question][cur_id_hyp] + [cur_matched_score_and_reason])
             print("Evaluating for background question: {}; total number of hypotheses: {}; number of hypotheses with matched score: {}".format(cur_background_question, len(ranked_hypothesis_collection[cur_background_question]), len(ranked_hypothesis_collection_with_matched_score[cur_background_question])))
         return ranked_hypothesis_collection_with_matched_score
                 
@@ -161,9 +161,13 @@ class Evaluate(object):
     def evaluate_for_one_hypothesis(self, gene_hyp, gold_hyp, keypoints):
         prompts = instruction_prompts('eval_matched_score')
         full_prompt = prompts[0] + gene_hyp + prompts[1] + gold_hyp + prompts[2] + keypoints + prompts[3]
-        # structured_gene: [matched_score, reason]
-        structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Reason:', 'Matched score:'], temperature=0.0, restructure_output_model_name=self.args.model_name, api_type=self.args.api_type)
-        structured_gene = exchange_order_in_list(structured_gene)
+        # Extract matched score using marker-based extraction (reason is in prompt but not extracted)
+        extracted = llm_generation_with_extraction(full_prompt, self.args.model_name, self.client,
+                                                   expected_fields=[("Matched score", "number")],
+                                                   temperature=0.0, api_type=self.args.api_type)
+        
+        # structured_gene: [matched_score, reason (None placeholder for compatibility)]
+        structured_gene = [extracted.get("Matched score", 0), None]
         return structured_gene
         
 

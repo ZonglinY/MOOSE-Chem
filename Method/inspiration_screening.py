@@ -1,7 +1,7 @@
 import os, sys, argparse, json, builtins
 from openai import OpenAI, AzureOpenAI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Method.utils import instruction_prompts, load_chem_annotation, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation_while_loop, exchange_order_in_list
+from Method.utils import instruction_prompts, load_chem_annotation, organize_raw_inspirations, load_dict_title_2_abstract, recover_generated_title_to_exact_version_of_title, llm_generation, llm_generation_with_multiple_extractions, extract_field, exchange_order_in_list
 from Method.logging_utils import setup_logger
 from google import genai
 
@@ -142,10 +142,16 @@ class Screening(object):
                     cur_title_abstract_pairs_prompt += cur_ta_prompt
                 # add instruction prompts
                 full_prompt = prompts[0] + bkg_research_question + prompts[1] + backgroud_survey + prompts[2] + cur_title_abstract_pairs_prompt + prompts[3]
-                # cur_structured_gene: [[Title, Reason], [Title, Reason], ...]
-                # Use zero temperature to escavate heuristics in the model the most 
-                cur_structured_gene = llm_generation_while_loop(full_prompt, self.args.model_name, self.client, if_structured_generation=True, template=['Title:', 'Reason:'], temperature=0.0, restructure_output_model_name=self.args.model_name, api_type=self.args.api_type)  
-                # cur_structured_gene = exchange_order_in_list(cur_structured_gene)
+                # Extract multiple titles using the new function with retry logic
+                # Use zero temperature to excavate heuristics in the model the most 
+                extracted_items = llm_generation_with_multiple_extractions(
+                    full_prompt, self.args.model_name, self.client,
+                    repeating_field_pattern=[("Title", "text")],
+                    temperature=0.0, api_type=self.args.api_type
+                )
+                
+                # Convert to expected format (add None for reason placeholder)
+                cur_structured_gene = [[item["Title"], None] for item in extracted_items]
             else:
                 cur_structured_gene = [[cur_title_abstract_pairs[cur_ta_id][0], "Less than num_screening_keep_size, so keep them without screening."] for cur_ta_id in range(len(cur_title_abstract_pairs))]
             # update next_round_inspiration_candidates

@@ -17,9 +17,9 @@ The generated hypothesis must not exceed 600 words, but it can be shorter if con
 # more_info: currently only used in additional_round_inspiration_screening, which is a number indicating the number of inspirations to select
 def instruction_prompts(module_name, more_info=None):
     if module_name == "first_round_inspiration_screening":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to an impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Usually a paper can be choosed as an inspiration is because it can potentially help to solve or alleviate one problem of a previous method for this research question so that leveraging the concepts related to the inspiration, a better method can be developed based on the previous methods and this inspiration. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. Here the previous method can only inference the multi-layer logistic regression, but can't automatically update its parameters to learn from data. The selected chain rule inspiration can be leveraged to automatically update the parameters in the multi-layer logistic regression, and therefore improve over the previous method to create hypothesis. \nGiven a research question, the background and some of the existing methods for this research question, and several top-tier publications (including their title and abstract), try to identify which publication can potentially serve as an inspiration for the background research question so that combining the research question and the inspiration in some way, a novel, valid, and significant research hypothesis can be formed. Now try to select inspirations based on the background research question. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe potential inspiration candidates are: ", "\n\nNow you have seen the background research question, existing methods, and many potential inspiration candidates. Please try to identify which three literature candidates are the most possible to serve as the inspiration to the background research question? Please name the title of the literature candidate, and also try to give your reasons. (response format: 'Title: \nReason: \nTitle: \nReason: \nTitle: \nReason: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to an impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Usually a paper can be choosed as an inspiration is because it can potentially help to solve or alleviate one problem of a previous method for this research question so that leveraging the concepts related to the inspiration, a better method can be developed based on the previous methods and this inspiration. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. Here the previous method can only inference the multi-layer logistic regression, but can't automatically update its parameters to learn from data. The selected chain rule inspiration can be leveraged to automatically update the parameters in the multi-layer logistic regression, and therefore improve over the previous method to create hypothesis. \nGiven a research question, the background and some of the existing methods for this research question, and several top-tier publications (including their title and abstract), try to identify which publication can potentially serve as an inspiration for the background research question so that combining the research question and the inspiration in some way, a novel, valid, and significant research hypothesis can be formed. Now try to select inspirations based on the background research question. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe potential inspiration candidates are: ", "\n\nNow you have seen the background research question, existing methods, and many potential inspiration candidates. Please carefully think through which publications would be most valuable as inspirations and why, considering how they could help solve problems or limitations in the existing methods.\n\nPlease identify which three literature candidates are the most possible to serve as the inspiration to the background research question. Please reasoning on this task first before providing your answers. Your answer should strictly follow this template:\n\n**Title 1 starts:** [exact title of first selected paper] **Title 1 ends**\n**Title 2 starts:** [exact title of second selected paper] **Title 2 ends**\n**Title 3 starts:** [exact title of third selected paper] **Title 3 ends**"]
     elif module_name == "first_round_inspiration_screening_only_based_on_semantic_similarity":
-        prompts = ["You are helping with the scientists to identify the most semantically similar publications. Given a research question, the background and some of the existing methods for this research question, and several top-tier publications (including their title and abstract), try to identify which publication is the most semantically similar to the background research question. Now try to select publications based on background research question. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe potential publication candidates are: ", "\n\nNow you have seen the background research question, and many potential publication candidates. Please try to identify which three literature candidates are the most semantically similar to the background research question? Please name the title of the literature candidate, and also try to give your reasons. (response format: 'Title: \nReason: \nTitle: \nReason: \nTitle: \nReason: \n')"]
+        prompts = ["You are helping with the scientists to identify the most semantically similar publications. Given a research question, the background and some of the existing methods for this research question, and several top-tier publications (including their title and abstract), try to identify which publication is the most semantically similar to the background research question. Now try to select publications based on background research question. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe potential publication candidates are: ", "\n\nNow you have seen the background research question, and many potential publication candidates. Please carefully analyze the semantic similarity between each candidate and the research question, considering how each publication relates to the research question.\n\nPlease reason through which publications are most semantically similar first before providing your selections. Your answer should strictly follow this template:\n\n**Title 1 starts:** [exact title of first selected paper] **Title 1 ends**\n\n**Title 2 starts:** [exact title of second selected paper] **Title 2 ends**\n\n**Title 3 starts:** [exact title of third selected paper] **Title 3 ends**"]
     elif module_name == "additional_round_inspiration_screening":
         # more_info: args.num_screening_keep_size
         assert isinstance(more_info, int)
@@ -27,16 +27,16 @@ def instruction_prompts(module_name, more_info=None):
         if more_info > 6:
             print(f"Warning: selecting {more_info} inspirations from all inspiration candidates, is it too much?")
         # might choose more than {num_screening_keep_size} inspirations, also might less than {num_screening_keep_size}
-        prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, a core inspiration in a literature for this research question, and a preliminary research hypothesis from the core inspiration. This hypothesis is aiming for top {DISCIPLINE} venue such as <Nature> or <Science>. You know, to publish a research on Nature or Science, the hypotheis must be novel, valid, and significant enough. ususally it means more than one inspirations should be involved in the hypothesis generation process. Therefore we also have found a series of inspiration candidates, which might provide additional useful information to assist the core inspiration for the next step of hypothesis generation. We have also obtained the potential hypotheses from the combination of each inspiration candidate with the research background question, which might be helpful in determining how each inspiration candidate can potentially contribute to the research question, and whether it could be helpful / complementary to the preliminary hypothesis developed based on the core inspiration. Please help us select around {more_info} inspiration candidates to assist further development of the hypothesis developed from the core inspiration. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe potential inspiration candidates and their corresponding hypotheses are: ", f"\n\nNow you have seen the background research question, the core inspiration, the preliminary hypothesis, and the potential inspiration candidates with their corresponding hypotheses. Please try to identify which {more_info} inspiration candidates can potentially serve such a complement role for the core inspiration, and how they can be helpful / complementary to the preliminary hypothesis developed based on the core inspiration. (response format: 'Title: \nReason: \nTitle: \nReason: \nTitle: \nReason: \n')"]
+        prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, a core inspiration in a literature for this research question, and a preliminary research hypothesis from the core inspiration. This hypothesis is aiming for top {DISCIPLINE} venue such as <Nature> or <Science>. You know, to publish a research on Nature or Science, the hypotheis must be novel, valid, and significant enough. ususally it means more than one inspirations should be involved in the hypothesis generation process. Therefore we also have found a series of inspiration candidates, which might provide additional useful information to assist the core inspiration for the next step of hypothesis generation. We have also obtained the potential hypotheses from the combination of each inspiration candidate with the research background question, which might be helpful in determining how each inspiration candidate can potentially contribute to the research question, and whether it could be helpful / complementary to the preliminary hypothesis developed based on the core inspiration. Please help us select around {more_info} inspiration candidates to assist further development of the hypothesis developed from the core inspiration. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe potential inspiration candidates and their corresponding hypotheses are: ", f"\n\nNow you have seen the background research question, the core inspiration, the preliminary hypothesis, and the potential inspiration candidates with their corresponding hypotheses. Please carefully analyze which inspiration candidates would best complement the core inspiration, considering how each could enhance or extend the preliminary hypothesis.\n\nPlease reason through which inspirations would best complement the core inspiration first before providing your selections. Your answer should strictly follow this template:\n\n" + "\n\n".join([f"**Title {i} starts:** [exact title of selected paper] **Title {i} ends**" for i in range(1, more_info + 1)])]
     elif module_name == "coarse_hypothesis_generation_only_core_inspiration":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of conducting research into four steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspiration (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Thirdly it's hypothesis generation based on the background research question and found inspiration; Finally it's about designing and conducting experiments to verify hypothesis. An example is the backpropagation of neural networks. In backpropagation, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. In their paper, the authors have conducted experiments to verify their hypothesis. Now we have identified a good research question, and we have found a core inspiration in a literature for this research question. Please help us generate a novel, valid, and significant research hypothesis based on the background research question and the inspiration. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", f"\n\nNow you have seen the background research question and the core inspiration. Please try to generate a novel, valid, and significant research hypothesis based on the background research question and the inspiration. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nHypothesis: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of conducting research into four steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspiration (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Thirdly it's hypothesis generation based on the background research question and found inspiration; Finally it's about designing and conducting experiments to verify hypothesis. An example is the backpropagation of neural networks. In backpropagation, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. In their paper, the authors have conducted experiments to verify their hypothesis. Now we have identified a good research question, and we have found a core inspiration in a literature for this research question. Please help us generate a novel, valid, and significant research hypothesis based on the background research question and the inspiration. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", f"\n\nNow you have seen the background research question and the core inspiration. Please think carefully about how the inspiration could be leveraged to address limitations or problems in the existing methods, then generate a novel, valid, and significant research hypothesis based on the background research question and the inspiration.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through how to combine the inspiration with the research question. Think step-by-step about the limitations in existing methods and how the inspiration addresses them.\n2. Then, formulate your hypothesis based on your reasoning.\n3. Finally, provide a summary of your key reasoning points.\n\nYour response MUST follow this exact format:\n\n**Hypothesis starts:** [your detailed hypothesis] **Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of the main reasoning steps that led to this hypothesis] **Key Reasoning ends**"]
     elif module_name == "coarse_hypothesis_generation_without_inspiration":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of conducting research into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly it's hypothesis generation based on the background research question; Finally it's about designing and conducting experiments to verify hypothesis. An example is the backpropagation of neural networks. In backpropagation, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression, and the research hypothesis is the backpropagation itself. In their paper, the authors have conducted experiments to verify their hypothesis. Now we have identified a good research question. Please help us generate a novel, valid, and significant research hypothesis based on the background research question. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", f"\n\nNow you have seen the background research question. Please try to generate a novel, valid, and significant research hypothesis based on the background research question. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nHypothesis: \n')"]
-    elif module_name == "validness_checking":
-        prompts = [f"You are assisting {DISCIPLINE} scientists on helping providing feedback to their newly proposed research hypothesis, targetting at publishing the research on a top {DISCIPLINE} venue like Nature or Science. You know, to publish a research on Nature or Science, the hypothesis must be both novel and valid. Here we focus on the validness aspect. Please try your best to give the {DISCIPLINE} scientists some feedbacks on whether the hypothesis by any chance is not valid. If not valid, try to give advice on how it could be modified to be more valid. Please directly answer this question. \nThe hypothesis is: \n", "\nPlease give a response to the initial question on determining whether the research hypothesis by any chance is not valid. If not valid, what are your advice to be more valid? (response format: 'Yes or No: \nAdvice:\n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of conducting research into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly it's hypothesis generation based on the background research question; Finally it's about designing and conducting experiments to verify hypothesis. An example is the backpropagation of neural networks. In backpropagation, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression, and the research hypothesis is the backpropagation itself. In their paper, the authors have conducted experiments to verify their hypothesis. Now we have identified a good research question. Please help us generate a novel, valid, and significant research hypothesis based on the background research question. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", f"\n\nNow you have seen the background research question. Please think carefully about potential approaches to address the research question, considering limitations in existing methods, then generate a novel, valid, and significant research hypothesis.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through how to address the research question. Think step-by-step about the gaps in current methods and potential solutions.\n2. Then, formulate your hypothesis based on your reasoning.\n3. Finally, provide a summary of your key reasoning points.\n\nYour response MUST follow this exact format:\n\n**Hypothesis starts:** [your detailed hypothesis] **Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of the main reasoning steps that led to this hypothesis] **Key Reasoning ends**"]
+    # elif module_name == "validness_checking":  # UNUSED
+    #     prompts = [f"You are assisting {DISCIPLINE} scientists on helping providing feedback to their newly proposed research hypothesis, targetting at publishing the research on a top {DISCIPLINE} venue like Nature or Science. You know, to publish a research on Nature or Science, the hypothesis must be both novel and valid. Here we focus on the validness aspect. Please try your best to give the {DISCIPLINE} scientists some feedbacks on whether the hypothesis by any chance is not valid. If not valid, try to give advice on how it could be modified to be more valid. Please directly answer this question. \nThe hypothesis is: \n", "\nPlease carefully analyze the hypothesis for validity first before providing your assessment. Your answer should strictly follow this template:\n\n**Yes or No starts:** [Yes if valid, No if not valid] **Yes or No ends**\n\n**Advice starts:** [your detailed advice for improvement if not valid, or confirmation of validity if valid] **Advice ends**"]
     elif module_name == "novelty_checking":
         prompts = [f"You are assisting {DISCIPLINE} scientists on helping providing feedback to their newly proposed research hypothesis, targetting at publishing the research on a top {DISCIPLINE} venue like Nature or Science. You know, to publish a research on Nature or Science, the hypothesis must be novel enough, which means it should not have been proposed by any existing literature before. \nPlease try your best to give the {DISCIPLINE} scientists some feedbacks on whether the hypothesis needs to be more novel. If so, what are your advice to be more novel? Please directly answer this question. Please note that your feedback should focus on the methodology in the hypothesis, but not how to add descriptions of its novelty. \nThe hypothesis is: \n", "\nPlease give a response to the initial question on determining whether the research hypothesis need to be more novel. If so, what are your advice to be more novel?"]
-    elif module_name == "clarity_checking":
+    # elif module_name == "clarity_checking":  # UNUSED
         # prompts = [f"You are assisting {DISCIPLINE} scientists on helping providing feedback to their newly proposed research hypothesis, targetting at publishing the research on a top {DISCIPLINE} venue like Nature or Science. You know, to publish a research on Nature or Science, the hypothesis must be clear and specific enough. Please try your best to give the {DISCIPLINE} scientists some feedbacks on whether the hypothesis needs to be more specific. If so, what are your advice to be more specific? We expect that every detail of the hypothesis is provided, so that a {DISCIPLINE} scientist looking at this hypothesis would have absolutely no doubt on what exactly and comprehensively the hypothesis is in every procedure and in every detail. \
         #            Please directly answer this question. \nThe hypothesis is: \n", "\nPlease give a response to the initial question on determining whether the research hypothesis need to be more specifc. If so, what are your advice to be more specific? (response format: 'Yes or No: \nAdvice:\n')"]
         prompts = [f'''
@@ -55,7 +55,7 @@ def instruction_prompts(module_name, more_info=None):
                     Your goal is to ensure that any {DISCIPLINE} scientist reading this hypothesis would have absolutely no doubt about its intended meaning, scope, and procedural details.
                    
                     Please directly answer this question. \nThe hypothesis is: \n
-                   ''', "\nPlease give a response to the initial question on determining whether the research hypothesis need to be more specifc. If so, what are your advice to be more specific? (response format: 'Yes or No: \nAdvice:\n')"]
+                   ''', "\nPlease carefully analyze the hypothesis for clarity and specificity first before providing your assessment. Your answer should strictly follow this template:\n\n**Yes or No starts:** [Yes if needs to be more specific, No if already specific enough] **Yes or No ends**\n\n**Advice starts:** [your detailed advice for improvement if needs more specificity, or confirmation if already specific] **Advice ends**"]
     elif module_name == "four_aspects_checking":
         # prompts = [f"You are assisting {DISCIPLINE} scientists on helping providing feedback to their newly proposed research hypothesis, targetting at publishing the research on a top {DISCIPLINE} venue like Nature or Science. You know, to publish a research on Nature or Science, the hypothesis must be (1) specific enough, which means the research hypothesis should contain enough details of the method for the researchers to know at least what the method is without any confusion or misunderstanding. For example, if to introduce a new concept into a method for the hypothesis, the hypothesis shouldn't be only about 'what the new concept is', but 'how specifically the new concept can be leveraged and integrated to the method'. If it is within your ability, please also provide details on the parameters of the hypothesis, so that the researchers can directly test the hypothesis in their lab; (2) novel enough, which means it should not have been proposed by any existing literature before; (3) completely valid, which means a real {DISCIPLINE} experiments should be able to verify the hypothesis; (4) significant in research, which means it is more preferable for it to have a relatively significant impact in research community. Currently we don't have resources for real lab experiments, so please try your best to analyze on validness based on your own knowledge and understanding. \nPlease try your best to give the {DISCIPLINE} scientists some feedbacks on whether the hypothesis needs to be more specific, novel, valid, or significant. If so, what are your advice to be more specific, novel, valid, or significant? Please directly answer this question. Please note that your feedback to these aspects should focus on the methodology in the hypothesis, but not how to add descriptions of its novelty, validness, or significance. \
         #            \nThe hypothesis is: \n", "\nPlease give a response to the initial question on determining whether the research hypothesis need to be more specifc, novel, valid, or significant. If so, what are your advice to be more specific, novel, valid, or significant?"]
@@ -164,39 +164,57 @@ def instruction_prompts(module_name, more_info=None):
                     2 — Low specificity. High-level idea only; hard to use directly.
                     1 — Vague. No actionable detail.
                     The hypothesis is:\n
-                   ''', "\nPlease give a response to the initial question on scoring the hypothesis from four aspects. Remember that you are a diligent and harsh reviewer. (response format: 'Concise reason for validness score: \nValidness score: \nConcise reason for novelty score: \nNovelty score: \nConcise reason for significance score: \nSignificance score: \nConcise reason for specificity score: \nSpecificity score: \n')."]
+                   ''', '''
+Please evaluate the hypothesis from all four aspects. Remember that you are a diligent and harsh reviewer.
+
+First, think through your evaluation carefully, considering each aspect based on the guidelines above.
+
+Then provide your scores. **IMPORTANT: You MUST strictly follow the template format below. Use the exact markers shown, including the "starts:" and "ends" tags:**
+
+**Validness Reason starts:** [Your concise reason for the validness score] **Validness Reason ends**
+**Validness Score starts:** [Score from 1-5] **Validness Score ends**
+
+**Novelty Reason starts:** [Your concise reason for the novelty score] **Novelty Reason ends**
+**Novelty Score starts:** [Score from 1-5] **Novelty Score ends**
+
+**Significance Reason starts:** [Your concise reason for the significance score] **Significance Reason ends**
+**Significance Score starts:** [Score from 1-5] **Significance Score ends**
+
+**Specificity Reason starts:** [Your concise reason for the specificity score] **Specificity Reason ends**
+**Specificity Score starts:** [Score from 1-5] **Specificity Score ends**
+''']
     elif module_name == "hypothesis_generation_with_feedback_only_core_inspiration":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question and a core inspiration in a literature for this research question. With them, we have already generated a preliminary coarse-grained research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", f"\n\nNow you have seen the background research question, the core inspiration, the preliminary hypothesis, and the feedbacks from domain experts. Please try to refine the hypothesis based on the feedbacks. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nRefined Hypothesis: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question and a core inspiration in a literature for this research question. With them, we have already generated a preliminary coarse-grained research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", f"\n\nNow you have seen the background research question, the core inspiration, the preliminary hypothesis, and the feedbacks from domain experts. Please carefully consider the feedback and think about how to refine the hypothesis accordingly.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through how to address each piece of feedback. Consider which suggestions are most critical and how to incorporate them.\n2. Then, formulate your refined hypothesis based on this analysis.\n3. Finally, provide a summary of how you addressed the feedback.\n\nYour response MUST follow this exact format:\n\n**Refined Hypothesis starts:** [your refined hypothesis incorporating the feedback] **Refined Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of how you addressed the main feedback points] **Key Reasoning ends**"]
     elif module_name == "hypothesis_generation_with_feedback_without_inspiration":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into two steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly it's hypothesis generation based on the background research question. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question. With it, we have already generated a preliminary coarse-grained research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", f"\n\nNow you have seen the background research question, the preliminary hypothesis, and the feedbacks from domain experts. Please try to refine the hypothesis based on the feedbacks. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nRefined Hypothesis: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into two steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly it's hypothesis generation based on the background research question. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question. With it, we have already generated a preliminary coarse-grained research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", f"\n\nNow you have seen the background research question, the preliminary hypothesis, and the feedbacks from domain experts. Please carefully consider the feedback and think about how to refine the hypothesis accordingly.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through how to address each piece of feedback. Consider which suggestions are most critical and how to incorporate them.\n2. Then, formulate your refined hypothesis based on this analysis.\n3. Finally, provide a summary of how you addressed the feedback.\n\nYour response MUST follow this exact format:\n\n**Refined Hypothesis starts:** [your refined hypothesis incorporating the feedback] **Refined Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of how you addressed the main feedback points] **Key Reasoning ends**"]
     elif module_name == "hypothesis_generation_mutation_different_with_prev_mutations_only_core_inspiration":
         # Add "In addition, by generating distinct hypothesis, please do not achieve it by simply introducing new concept(s) into the previous hypothesis to make the difference, but please focus on the difference on the methodology of integrating or leveraging the inspiration to give a better answer to the research question (in terms of the difference on the methodology, concepts can be introduced or deleted)."
         prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, an introduction of previous methods, and a core inspiration in a literature for this research question. The experts know that a proper mixture of these components will definitely lead to a valid, novel, and meaningful research hypothesis. In fact, they already have tried to mix them to compose some research hypotheses (that are supposed to be distinct from each other). Please try to explore a new meaningful way to combine the inspiration with the research background to generate a new research hypothesis that is distinct with all the previous hypotheses in terms of their main method. \
                    {MUTATION_CUSTOM_GUIDE} \
-                   The new research hypothesis should ideally be novel, valid, ideally significant, and be enough specific in its methodology. Please note that here we are trying to explore a new meaningful way to leverage the inspiration along with the previous methods (inside or outside the introduction) to better answer the background research question, therefore the new research hypothesis should try to leverage or contain the key information or the key reasoning process in the inspiration, trying to better address the background research question. It means the new research hypothesis to be generated should at least not be completely irrelevant to the inspiration or background research question. In addition, by generating distinct hypothesis, please do not achieve it by simply introducing new concept(s) into the previous hypothesis to make the difference, but please focus on the difference on the methodology of integrating or leveraging the inspiration to give a better answer to the research question  (in terms of the difference on the methodology, concepts can be introduced or deleted). \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe previous hypotheses are: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, and some previous efforts on combining the inspiration with the background for new hypotheses. Please try to generate a novel, valid, detailed, and significant research hypothesis based on the background research question and the inspirations. Please also make sure that the new hypothesis to be generated is distinct with the previous proposed hypotheses in terms of their main method. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nHypothesis: \n')"]
+                   The new research hypothesis should ideally be novel, valid, ideally significant, and be enough specific in its methodology. Please note that here we are trying to explore a new meaningful way to leverage the inspiration along with the previous methods (inside or outside the introduction) to better answer the background research question, therefore the new research hypothesis should try to leverage or contain the key information or the key reasoning process in the inspiration, trying to better address the background research question. It means the new research hypothesis to be generated should at least not be completely irrelevant to the inspiration or background research question. In addition, by generating distinct hypothesis, please do not achieve it by simply introducing new concept(s) into the previous hypothesis to make the difference, but please focus on the difference on the methodology of integrating or leveraging the inspiration to give a better answer to the research question  (in terms of the difference on the methodology, concepts can be introduced or deleted). \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe previous hypotheses are: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, and some previous efforts on combining the inspiration with the background for new hypotheses. Please carefully think about how to create a distinct approach that differs from the previous attempts.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through how to create a distinct hypothesis. Analyze what aspects the previous attempts covered and identify unexplored directions.\n2. Then, formulate your hypothesis that explores these new directions.\n3. Finally, provide a summary of why your approach is distinct.\n\nYour response MUST follow this exact format:\n\n**Hypothesis starts:** [your detailed hypothesis that is distinct from previous ones] **Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of why this hypothesis is distinct and how you arrived at it] **Key Reasoning ends**"]
     elif module_name == "final_recombinational_mutation_hyp_gene_same_bkg_insp":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, an introduction of previous methods, and a core inspiration in a literature for this research question. In addition, several experts have already come out of several different hypotheses on how to leverage the inspiration to generate a novel, valid, and significant research hypothesis for the background research question. Please find the bright parts in these hypotheses, leverage the bright parts from them,  modify and combine the good parts of them to generate a better research hypothesis in terms of clarity, novelty, validness, and significance (ideally than any of the given hypotheses). It is not necessary to include methods from every given hypothesis, especially when it is not a good hypothesis. But in general you should try your best to benefit from every given hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypotheses from different expert teams are: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, and the hypotheses from different human scientist teams. Please try to generate a novel, valid, significant, and detailed research hypothesis based on the background research question, the inspirations, and the previous efforts from human scientist teams on the given hypotheses. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nHypothesis: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, an introduction of previous methods, and a core inspiration in a literature for this research question. In addition, several experts have already come out of several different hypotheses on how to leverage the inspiration to generate a novel, valid, and significant research hypothesis for the background research question. Please find the bright parts in these hypotheses, leverage the bright parts from them,  modify and combine the good parts of them to generate a better research hypothesis in terms of clarity, novelty, validness, and significance (ideally than any of the given hypotheses). It is not necessary to include methods from every given hypothesis, especially when it is not a good hypothesis. But in general you should try your best to benefit from every given hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypotheses from different expert teams are: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, and the hypotheses from different human scientist teams. Please carefully analyze the strengths of each approach and think about how to combine them effectively.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through the strengths and weaknesses of each hypothesis. Identify which elements are most promising to combine.\n2. Then, formulate your combined hypothesis leveraging the best elements.\n3. Finally, provide a summary of your combination strategy.\n\nYour response MUST follow this exact format:\n\n**Hypothesis starts:** [your refined hypothesis combining the best elements] **Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of which elements you combined and why] **Key Reasoning ends**"]
     elif module_name == "final_recombinational_mutation_hyp_gene_same_bkg_insp_with_feedback":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. \nNow we have identified a good research question, an introduction of previous methods, and a core inspiration in a literature for this research question. In addition, several experts have already come out of several different hypotheses on how to leverage the inspiration to generate a novel, valid, and significant research hypothesis for the background research question. Please find the bright parts in these hypotheses, leverage the bright parts from them,  modify and combine the good parts of them to generate a better research hypothesis in terms of clarity, novelty, validness, and significance (ideally than any of the given hypotheses). It is not necessary to include methods from every given hypothesis, especially when it is not a good hypothesis. But in general you should try your best to benefit from every given hypothesis. In fact, a researcher has already tried to propose hypothesis based on these information, and we have obtained the feedback to his hypothesis, from another respectful researcher. Please try to leverage the feedback to improve the hypothesis, you can leverage all these provided information as your reference. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypotheses from different expert teams are: ", "\n\nThe hypothesis from the researcher is: ", "\n\nThe feedback to the hypothesis from the researcher is: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypotheses from different human scientist teams, the hypothesis from the researcher, and the feedback to the hypothesis from the researcher. Please try to generate a better hypothesis (in terms of novelty, validness, significance, and detailedness) based on these information. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nRefined Hypothesis: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. \nNow we have identified a good research question, an introduction of previous methods, and a core inspiration in a literature for this research question. In addition, several experts have already come out of several different hypotheses on how to leverage the inspiration to generate a novel, valid, and significant research hypothesis for the background research question. Please find the bright parts in these hypotheses, leverage the bright parts from them,  modify and combine the good parts of them to generate a better research hypothesis in terms of clarity, novelty, validness, and significance (ideally than any of the given hypotheses). It is not necessary to include methods from every given hypothesis, especially when it is not a good hypothesis. But in general you should try your best to benefit from every given hypothesis. In fact, a researcher has already tried to propose hypothesis based on these information, and we have obtained the feedback to his hypothesis, from another respectful researcher. Please try to leverage the feedback to improve the hypothesis, you can leverage all these provided information as your reference. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypotheses from different expert teams are: ", "\n\nThe hypothesis from the researcher is: ", "\n\nThe feedback to the hypothesis from the researcher is: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypotheses from different human scientist teams, the hypothesis from the researcher, and the feedback to the hypothesis from the researcher. Please carefully consider the feedback and think about how to improve the hypothesis.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through the feedback and the various hypotheses. Consider how to address the feedback while leveraging insights from the different approaches.\n2. Then, formulate your refined hypothesis that addresses the feedback.\n3. Finally, provide a summary of your refinement approach.\n\nYour response MUST follow this exact format:\n\n**Refined Hypothesis starts:** [your improved hypothesis incorporating the feedback] **Refined Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of how you addressed the feedback and integrated insights] **Key Reasoning ends**"]
     elif module_name == "final_recombinational_mutation_hyp_gene_between_diff_inspiration":
-        prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, an introduction of previous methods, a core inspiration in a literature for this research question, and a hypothesis resulted from leveraging the core inspiration to answer the research background question. This hypothesis is aiming for top {DISCIPLINE} venues such as <Nature> or <Science>. You know, to publish a research on <Nature> or <Science>, the hypotheis must be novel, valid, and significant enough. Ususally it means more than one inspirations should be involved in the hypothesis generation process. Therefore a senior researcher have identified an additional inspiration, along with a hypothesis generated from leveraging the additional inspiration to the research background question. This additional inspiration and its corresponding hypothesis is supposed to provide complementry useful information to assist the further development of the hypothesis developed from the core inspiration. Please find the bright parts in these hypotheses, try to leverage the bright parts from them, modify the hypothesis developed based on the given core inspiration to improve it in terms of novelty, validness, significance, and detailedness. It is not necessary to include methods from every given inspiration & its hypothesis, especially when it is not a good hypothesis. But in general you should try your best to benefit from every given inspiration & its hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nThe hypotheses from other inspirations are: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypothesis from the core inspiration, and the hypotheses resulted from different inspirations. Please try to generate a better hypothesis (in terms of novelty, validness, significance, and detailedness) based on these information. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nHypothesis: \n')"]
+        prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. Take backpropagation as an example, the research question is how to use data to automatically improve the parameters of a multi-layer logistic regression with data, the inspiration is the chain rule in mathematics, and the research hypothesis is the backpropagation itself. \nNow we have identified a good research question, an introduction of previous methods, a core inspiration in a literature for this research question, and a hypothesis resulted from leveraging the core inspiration to answer the research background question. This hypothesis is aiming for top {DISCIPLINE} venues such as <Nature> or <Science>. You know, to publish a research on <Nature> or <Science>, the hypotheis must be novel, valid, and significant enough. Ususally it means more than one inspirations should be involved in the hypothesis generation process. Therefore a senior researcher have identified an additional inspiration, along with a hypothesis generated from leveraging the additional inspiration to the research background question. This additional inspiration and its corresponding hypothesis is supposed to provide complementry useful information to assist the further development of the hypothesis developed from the core inspiration. Please find the bright parts in these hypotheses, try to leverage the bright parts from them, modify the hypothesis developed based on the given core inspiration to improve it in terms of novelty, validness, significance, and detailedness. It is not necessary to include methods from every given inspiration & its hypothesis, especially when it is not a good hypothesis. But in general you should try your best to benefit from every given inspiration & its hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nThe hypotheses from other inspirations are: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypothesis from the core inspiration, and the hypotheses resulted from different inspirations. Please carefully analyze how to combine insights from multiple inspirations effectively.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through how different inspirations complement each other. Identify synergies and potential integration points.\n2. Then, formulate your integrated hypothesis that leverages these synergies.\n3. Finally, provide a summary of your integration approach.\n\nYour response MUST follow this exact format:\n\n**Hypothesis starts:** [your integrated hypothesis leveraging multiple inspirations] **Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of how you integrated the multiple inspirations] **Key Reasoning ends**"]
     elif module_name == "final_recombinational_mutation_hyp_gene_between_diff_inspiration_with_feedback":
-        prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. \nNow we have identified a good research question, an introduction of previous methods, a core inspiration in a literature for this research question, and a hypothesis resulted from leveraging the core inspiration to answer the research background question. This hypothesis is aiming for top {DISCIPLINE} venues such as <Nature> or <Science>. You know, to publish a research on <Nature> or <Science>, the hypotheis must be novel, valid, and significant enough. Ususally it means more than one inspirations should be involved in the hypothesis generation process. Therefore a senior researcher have identified an additional inspiration, along with a hypothesis generated from leveraging the additional inspiration to the research background question. This additional inspiration and its corresponding hypothesis is supposed to provide complementry useful information to assist the further development of the hypothesis developed from the core inspiration. Please find the bright parts in these hypotheses, try to leverage the bright parts from them, modify the hypothesis developed based on the given core inspiration to improve it in terms of novelty, validness, significance, and detailedness. In fact, a researcher has already tried to propose hypothesis based on these information, and we have obtained the feedback to his hypothesis, from another respectful researcher. Please try to leverage the feedback to improve the hypothesis, you can leverage all these provided information as your reference. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nThe hypotheses from other inspirations are: ", "\n\nThe hypothesis from the researcher is: ", "\n\nThe feedback to the hypothesis from the researcher is: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypothesis from the core inspiration, the hypotheses resulted from different inspirations, the hypothesis from the researcher, and the feedback to the hypothesis from the researcher. Please try to generate a better hypothesis (in terms of novelty, validness, significance, and detailedness) based on these information. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nRefined Hypothesis: \n')"]
+        prompts = [f"You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into three steps. Firstly it's about the research background, including finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Finally it's hypothesis generation based on the background research question and found inspirations. \nNow we have identified a good research question, an introduction of previous methods, a core inspiration in a literature for this research question, and a hypothesis resulted from leveraging the core inspiration to answer the research background question. This hypothesis is aiming for top {DISCIPLINE} venues such as <Nature> or <Science>. You know, to publish a research on <Nature> or <Science>, the hypotheis must be novel, valid, and significant enough. Ususally it means more than one inspirations should be involved in the hypothesis generation process. Therefore a senior researcher have identified an additional inspiration, along with a hypothesis generated from leveraging the additional inspiration to the research background question. This additional inspiration and its corresponding hypothesis is supposed to provide complementry useful information to assist the further development of the hypothesis developed from the core inspiration. Please find the bright parts in these hypotheses, try to leverage the bright parts from them, modify the hypothesis developed based on the given core inspiration to improve it in terms of novelty, validness, significance, and detailedness. In fact, a researcher has already tried to propose hypothesis based on these information, and we have obtained the feedback to his hypothesis, from another respectful researcher. Please try to leverage the feedback to improve the hypothesis, you can leverage all these provided information as your reference. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nThe hypotheses from other inspirations are: ", "\n\nThe hypothesis from the researcher is: ", "\n\nThe feedback to the hypothesis from the researcher is: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypothesis from the core inspiration, the hypotheses resulted from different inspirations, the hypothesis from the researcher, and the feedback to the hypothesis from the researcher. Please carefully consider all the feedback and insights to create an improved hypothesis.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nIMPORTANT: Please follow this process:\n1. First, reason through the feedback and how the different inspirations can address it. Consider how to create a comprehensive solution.\n2. Then, formulate your refined hypothesis that incorporates all improvements.\n3. Finally, provide a summary of your integration approach.\n\nYour response MUST follow this exact format:\n\n**Refined Hypothesis starts:** [your refined hypothesis incorporating all improvements] **Refined Hypothesis ends**\n\n**Key Reasoning starts:** [a concise summary of how you incorporated feedback and multiple inspirations] **Key Reasoning ends**"]
     elif module_name == "self_extra_knowledge_exploration":
-        prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generated a hypothesis for the research question based on the little survey, and the hypothesis generated based on the survey and the inspiration. Although everything goes well now, the hypothesis might only cover one key point (from the inspiration), and might not be complete enough to be a full hypothesis in terms of Validness, Novelty, and Significance. Usually like those papers published on <Nature> or <Science>, a hypothesis could contain two to three key points for it to be enough excellent in terms of Validness, Novelty, and Significance. Please try your best to explore one more knowledge that can potentially improve or complement the existing research hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, and the hypothesis from the core inspiration, please try to explore one more knowledge that can potentially improve or complement the existing research hypothesis. If the hypothesis is complete enough, please answer 'No' to 'If need extra knowledge:' template, and give your reason in 'Details' template. If extra knowledge is needed, please answer 'Yes' first, and then to give the explored knowledge in 'Details' template. (response format: 'If need extra knowledge: \nDetails: \n')"]
+        prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generated a hypothesis for the research question based on the little survey, and the hypothesis generated based on the survey and the inspiration. Although everything goes well now, the hypothesis might only cover one key point (from the inspiration), and might not be complete enough to be a full hypothesis in terms of Validness, Novelty, and Significance. Usually like those papers published on <Nature> or <Science>, a hypothesis could contain two to three key points for it to be enough excellent in terms of Validness, Novelty, and Significance. Please try your best to explore one more knowledge that can potentially improve or complement the existing research hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, and the hypothesis from the core inspiration. Please carefully analyze whether additional knowledge is needed to improve or complement the existing research hypothesis.\n\nPlease reason through whether additional knowledge is needed first before providing your answer. Your answer should strictly follow this template:\n\n**If need extra knowledge starts:** [Yes or No] **If need extra knowledge ends**\n\n**Details starts:** [If No: explain why the hypothesis is complete enough. If Yes: provide the explored additional knowledge that could improve the hypothesis] **Details ends**"]
     elif module_name == "self_extra_knowledge_exploration_with_other_mutations":
-        prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generated a hypothesis for the research question based on the little survey, and the hypothesis generated based on the survey and the inspiration. Although everything goes well now, the hypothesis might only cover one key point (from the inspiration), and might not be complete enough to be a full hypothesis in terms of Validness, Novelty, and Significance. Usually like those papers published on <Nature> or <Science>, a hypothesis could contain two to three key points for it to be enough excellent in terms of Validness, Novelty, and Significance. Please try your best to explore one more knowledge that can potentially improve or complement the existing research hypothesis. One more thing to mention, the researchers have already tried to further develop the original hypothesis with extra knowledge, and they have already proposed some potential hypotheses afterwards. Here we want to explore the extra knowledge in a different way with these hypotheses. So please try to develop the original hypothesis with extra knowledge, but not in the same way as any of the hypothesis developed afterwards, so to explore more opportunities. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe original hypothesis from the core inspiration is: ", "\n\nThe hypotheses developed afterwards are: ", "\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the original hypothesis from the core inspiration, and some hypotheses developed afterwards based on the original hypothesis, please try to explore one more knowledge that can potentially improve or complement the original research hypothesis, but not in the same way as any of the hypothesis developed afterwards. If the original hypothesis is complete enough, please answer 'No' to 'If need extra knowledge:' template, and give your reason in 'Details' template. If extra knowledge is needed, please answer 'Yes' first, and then to give the explored knowledge in 'Details' template. (response format: 'If need extra knowledge: \nDetails: \n')"]
+        prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generated a hypothesis for the research question based on the little survey, and the hypothesis generated based on the survey and the inspiration. Although everything goes well now, the hypothesis might only cover one key point (from the inspiration), and might not be complete enough to be a full hypothesis in terms of Validness, Novelty, and Significance. Usually like those papers published on <Nature> or <Science>, a hypothesis could contain two to three key points for it to be enough excellent in terms of Validness, Novelty, and Significance. Please try your best to explore one more knowledge that can potentially improve or complement the existing research hypothesis. One more thing to mention, the researchers have already tried to further develop the original hypothesis with extra knowledge, and they have already proposed some potential hypotheses afterwards. Here we want to explore the extra knowledge in a different way with these hypotheses. So please try to develop the original hypothesis with extra knowledge, but not in the same way as any of the hypothesis developed afterwards, so to explore more opportunities. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe original hypothesis from the core inspiration is: ", "\n\nThe hypotheses developed afterwards are: ", "\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the original hypothesis from the core inspiration, and some hypotheses developed afterwards based on the original hypothesis. Please carefully analyze whether additional knowledge is needed that differs from previous attempts.\n\nPlease reason through whether additional knowledge is needed first before providing your answer. Your answer should strictly follow this template:\n\n**If need extra knowledge starts:** [Yes or No] **If need extra knowledge ends**\n\n**Details starts:** [If No: explain why the hypothesis is complete enough. If Yes: provide the explored additional knowledge that differs from previous attempts] **Details ends**"]
     elif module_name == "hypothesis_generation_with_extra_knowledge":
-        prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generated a hypothesis for the research question based on the little survey, and the hypothesis generated based on the survey and the inspiration. Although everything goes well now, the hypothesis might only cover one key point (from the inspiration), and might not be complete enough to be a full hypothesis in terms of Validness, Novelty, and Significance. Usually like those papers published on <Nature> or <Science>, a hypothesis could contain two to three key points for it to be enough excellent in terms of Validness, Novelty, and Significance. Therefore the researcher has already explored the additional knowledge to make the hypothesis more complete. Please try your best to generate a new hypothesis based on the background research question, the inspiration, the additional knowledge, and the given preliminary hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nThe additional knowledge is: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypothesis from the core inspiration, and the additional knowledge, please try to generate a new hypothesis based on the background research question, the inspiration, the hypothesis, and the additional knowledge. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nHypothesis: \n')"]
+        prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generated a hypothesis for the research question based on the little survey, and the hypothesis generated based on the survey and the inspiration. Although everything goes well now, the hypothesis might only cover one key point (from the inspiration), and might not be complete enough to be a full hypothesis in terms of Validness, Novelty, and Significance. Usually like those papers published on <Nature> or <Science>, a hypothesis could contain two to three key points for it to be enough excellent in terms of Validness, Novelty, and Significance. Therefore the researcher has already explored the additional knowledge to make the hypothesis more complete. Please try your best to generate a new hypothesis based on the background research question, the inspiration, the additional knowledge, and the given preliminary hypothesis. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe hypothesis from the core inspiration is: ", "\n\nThe additional knowledge is: ", f"\n\nNow you have seen the background research question, an introduction of the previous methods, the core inspiration, the hypothesis from the core inspiration, and the additional knowledge. Please carefully think about how to integrate the additional knowledge to improve the hypothesis.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nPlease reason through how to integrate the additional knowledge first before providing your hypothesis. Your answer should strictly follow this template:\n\n**Hypothesis starts:** [your enhanced hypothesis incorporating the additional knowledge] **Hypothesis ends**"]
     # here with_extra_knowledge" means the hypothesis is generated based on the core inspiration and the extra knowledge, but not that the feedback need to cover extra knowledge
     elif module_name == "provide_feedback_to_hypothesis_four_aspects_with_extra_knowledge":
         prompts = [f"You are helping to develop a {DISCIPLINE} research hypothesis. A senior researcher has identified the research question, a little survey on the background of the research question, a key inspiration paper used to generate a hypothesis for the research question based on the little survey, an extra knowledge that should be usedful to develop a hypothesis, and the hypotheses developed based on the inspiration and the extra knowledge. Please try to give some feedback to the research hypothesis. Specifically, you know, to publish a research on Nature or Science, the hypothesis must be (1) specific enough, which means the research hypothesis should contain enough details of the method for the researchers to know at least what the method is without any confusion or misunderstanding (if it is within your ability, please also provide details on the parameters of the hypothesis, so that the researchers can directly test the hypothesis in their lab); (2) novel enough, which means it should not have been proposed by any existing literature before; (3) completely valid, which means a real {DISCIPLINE} experiments should be able to verify the hypothesis; (4) significant in research, which means it is more preferable for it to have a relatively significant impact in research community. \nPlease try your best to give the senior researcher some feedbacks on whether the hypothesis needs to be more specific, novel, valid, or significant. If so, what are your advice to be more specific, novel, valid, or significant? Please directly answer this question. Please note that your feedback to these aspects should focus on the methodology in the hypothesis, but not how to add descriptions of its novelty, significance, or validness. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe extra knowledge is: ", "\n\nThe hypothesis is: ", "\n\nNow you have seen the background research question, the core inspiration, the extra knowledge, and the hypothesis. Please give a response to the initial question on determining whether the research hypothesis need to be more specifc, novel, valid, or significant. If so, what are your advice to be more specific, novel, valid, or significant?"]
     elif module_name == "hypothesis_refinement_with_feedback_with_extra_knowledge":
-        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into four steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Thirdly it's about finding extra knowledge that work along with the inspiration can lead to a more complete hypothesis. Finally it's hypothesis generation based on the background research question, the found inspirations, and the extra knowledge. \nNow we have identified a good research question, a core inspiration in a literature for this research question, and extra knowledge. With them, we have already generated a preliminary research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe extra knowledge is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", f"\n\nNow you have seen the background research question, the core inspiration, the extra knowledge, the preliminary hypothesis, and the feedbacks from domain experts. Please try to refine the hypothesis based on the feedbacks. {HYPTHESIS_GENERATION_CUSTOM_GUIDE}(response format: 'Reasoning Process:\nRefined Hypothesis: \n')"]
+        prompts = ["You are helping with the scientific hypotheses generation process. We in general split the period of research hypothesis proposal into four steps. Firstly it's about finding a good and specific background research question, and an introduction of the previous methods under the same topic; Secondly its about finding inspirations (mostly from literatures), which combined with the background research question, can lead to a impactful research hypothesis; Thirdly it's about finding extra knowledge that work along with the inspiration can lead to a more complete hypothesis. Finally it's hypothesis generation based on the background research question, the found inspirations, and the extra knowledge. \nNow we have identified a good research question, a core inspiration in a literature for this research question, and extra knowledge. With them, we have already generated a preliminary research hypothesis. We have also obtain feedbacks on the hypothesis from domain experts in terms of novalty, validity, significance, and clarity. With these feedbacks, please try your best to refine the hypothesis. Please note that during refinement, do not improve a hypothesis's significance by adding expectation of the performance gain of the method or adding description of its potential impact, but you should work on improving the method itself (e.g., by adding or changing details of the methodology). Similar advice for other evaluation aspects (novelty, validness, and clarity), too. \nThe background research question is: ", "\n\nThe introduction of the previous methods is:", "\n\nThe core inspiration is: ", "\n\nThe extra knowledge is: ", "\n\nThe preliminary hypothesis is: ", "\n\nThe feedbacks from domain experts are: ", f"\n\nNow you have seen the background research question, the core inspiration, the extra knowledge, the preliminary hypothesis, and the feedbacks from domain experts. Please carefully consider the feedback and think about how to refine the hypothesis accordingly.\n\n{HYPTHESIS_GENERATION_CUSTOM_GUIDE}\n\nPlease reason through how to address the feedback first before providing your refined hypothesis. Your answer should strictly follow this template:\n\n**Refined Hypothesis starts:** [your refined hypothesis incorporating the feedback] **Refined Hypothesis ends**"]
     elif module_name == "eval_matched_score":
-        prompts = [f"You are helping to evaluate the quality of a proposed research hypothesis in {DISCIPLINE} by a phd student. The groundtruth hypothesis will also be provided to compare. Here we mainly focus on whether the proposed hypothesis has covered the key points in terms of the methodology in the groundtruth hypothesis. You will also be given a summary of the key points in the methodology of the groundtruth hypothesis for reference. Please note that for the proposed hypothesis to cover one key point, it is not necessary to explicitly mention the name of the key point, but might also can integrate the key point implicitly in the proposed method. The evaluation criteria is called 'Matched score', which is in a 6-point Likert scale (from 5 to 0). Particularly, 5 points mean that the proposed hypothesis (1) covers all the key points and leverage them similarly as in the methodology of the groundtruth hypothesis, and (2) does not contain any extra key point that has apparent flaws; 4 points mean that the proposed hypothesis (1) covers all the key points (or at least three key points) and leverage them similarly as in the methodology of the groundtruth hypothesis, (2) but also with extra key points that have apparent flaws; 3 points mean that the proposed hypothesis (1) covers at least two key points and leverage them similarly as in the methodology of the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, (3) might or might not contain extra key points; 2 points mean that the proposed hypothesis (1) covers at least one key point in the methodology of the groundtruth hypothesis, and leverage it similarly as in the methodology of groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; 1 point means that the proposed hypothesis (1) covers at least one key point in the methodology of the groundtruth hypothesis, (2) but is used differently as in the methodology of groundtruth hypothesis, and (3) might or might not contain extra key points; 0 point means that the proposed hypothesis does not cover any key point in the methodology of the groundtruth hypothesis at all. Please note that the total number of key points in the groundtruth hypothesis might be less than three, so that multiple points can be given. E.g., there's only one key point in the groundtruth hypothesis, and the proposed hypothesis covers the one key point, it's possible to give 2 points, 4 points, and 5 points. In this case, we should choose score from 4 points and 5 points, depending on the existence and quality of extra key points. 'Leveraging a key point similarly as in the methodology of the groundtruth hypothesis' means that in the proposed hypothesis, the same (or very related) concept (key point) is used in a similar way with a similar goal compared to the groundtruth hypothesis (not necessarily for the proposed hypothesis to be exactly the same with the groudtruth hypothesis to be classified as 'similar'). When judging whether an extra key point has apparent flaws, you should use your own knowledge to judge, but rather than to rely on the count number of pieces of extra key point to judge. \nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis. \nThe proposed hypothesis is: ", "\n\nThe groundtruth hypothesis is: ", "\n\nThe key points in the groundtruth hypothesis are: ", "\n\nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis, and give a score. (response format: 'Reason: \nMatched score: \n')"]
-    elif module_name == "eval_matched_score_hard":
-        prompts = ["You are helping to evaluate the quality of a proposed research hypothesis by a phd student. The groundtruth hypothesis will also be provided to compare. Here we mainly focus on whether the proposed hypothesis has covered the key points of the groundtruth hypothesis. You will also be given a summary of the key points in the groundtruth hypothesis for reference. The evaluation criteria is called 'Matched score', which is in a 6-point Likert scale (from 5 to 0). Particularly, \n5 points mean that the proposed hypothesis (1) covers three key points (or covers all the key points) in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, and (2) does not contain any extra key point(s) that is redundant, unnecessary, unhelpful, or harmful; \n4 points mean that the proposed hypothesis (1) covers three key points (or covers all the key points) in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, and (2) but also contain extra key point(s) that is redundant, unnecessary, unhelpful, or harmful; \n3 points mean that the proposed hypothesis (1) covers two key points in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; \n2 points mean that the proposed hypothesis (1) covers one key point in the groundtruth hypothesis, and leverage it nearly identically as in the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; \n1 point means that the proposed hypothesis (1) covers at least one key point in the groundtruth hypothesis, but all the covered key point(s) are used differently as in the groundtruth hypothesis, and (2) might or might not contain extra key points; \n0 point means that the proposed hypothesis does not cover any key point in the groundtruth hypothesis at all. \nUsually total the number of key points a groundtruth hypothesis contain is less than or equal to three. Please note that the total number of key points in the groundtruth hypothesis might be less than three, so that multiple points can be given. E.g., there's only one key point in the groundtruth hypothesis, and the proposed hypothesis covers the one key point nearly identically, it's possible to give 2 points, 4 points, and 5 points. In this case, we should choose score from 4 points and 5 points, depending on the existence and quality of extra key points. 'Leveraging a key point nearly identically as in the groundtruth hypothesis means that in the proposed hypothesis, the same (or very related) concept (key point) is used in a very similar way with a very similar goal compared to the groundtruth hypothesis. \nWhen judging whether an extra key point has apparent flaws, you should use your own knowledge and understanding of that discipline to judge, rather than only relying on the count number of pieces of extra key point to judge. \nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis. \nThe proposed hypothesis is: ", "\n\nThe groundtruth hypothesis is: ", "\n\nThe key points in the groundtruth hypothesis are: ", "\n\nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis, and give a score. (response format: 'Reason: \nMatched score: \n')"]
+        prompts = [f"You are helping to evaluate the quality of a proposed research hypothesis in {DISCIPLINE} by a phd student. The groundtruth hypothesis will also be provided to compare. Here we mainly focus on whether the proposed hypothesis has covered the key points in terms of the methodology in the groundtruth hypothesis. You will also be given a summary of the key points in the methodology of the groundtruth hypothesis for reference. Please note that for the proposed hypothesis to cover one key point, it is not necessary to explicitly mention the name of the key point, but might also can integrate the key point implicitly in the proposed method. The evaluation criteria is called 'Matched score', which is in a 6-point Likert scale (from 5 to 0). Particularly, 5 points mean that the proposed hypothesis (1) covers all the key points and leverage them similarly as in the methodology of the groundtruth hypothesis, and (2) does not contain any extra key point that has apparent flaws; 4 points mean that the proposed hypothesis (1) covers all the key points (or at least three key points) and leverage them similarly as in the methodology of the groundtruth hypothesis, (2) but also with extra key points that have apparent flaws; 3 points mean that the proposed hypothesis (1) covers at least two key points and leverage them similarly as in the methodology of the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, (3) might or might not contain extra key points; 2 points mean that the proposed hypothesis (1) covers at least one key point in the methodology of the groundtruth hypothesis, and leverage it similarly as in the methodology of groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; 1 point means that the proposed hypothesis (1) covers at least one key point in the methodology of the groundtruth hypothesis, (2) but is used differently as in the methodology of groundtruth hypothesis, and (3) might or might not contain extra key points; 0 point means that the proposed hypothesis does not cover any key point in the methodology of the groundtruth hypothesis at all. Please note that the total number of key points in the groundtruth hypothesis might be less than three, so that multiple points can be given. E.g., there's only one key point in the groundtruth hypothesis, and the proposed hypothesis covers the one key point, it's possible to give 2 points, 4 points, and 5 points. In this case, we should choose score from 4 points and 5 points, depending on the existence and quality of extra key points. 'Leveraging a key point similarly as in the methodology of the groundtruth hypothesis' means that in the proposed hypothesis, the same (or very related) concept (key point) is used in a similar way with a similar goal compared to the groundtruth hypothesis (not necessarily for the proposed hypothesis to be exactly the same with the groudtruth hypothesis to be classified as 'similar'). When judging whether an extra key point has apparent flaws, you should use your own knowledge to judge, but rather than to rely on the count number of pieces of extra key point to judge. \nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis. \nThe proposed hypothesis is: ", "\n\nThe groundtruth hypothesis is: ", "\n\nThe key points in the groundtruth hypothesis are: ", "\n\nPlease carefully reason through your evaluation based on the criteria above first before providing your score. Your answer should strictly follow this template:\n\n**Matched score starts:** [0-5] **Matched score ends**"]
+    # elif module_name == "eval_matched_score_hard":  # UNUSED
+    #     prompts = ["You are helping to evaluate the quality of a proposed research hypothesis by a phd student. The groundtruth hypothesis will also be provided to compare. Here we mainly focus on whether the proposed hypothesis has covered the key points of the groundtruth hypothesis. You will also be given a summary of the key points in the groundtruth hypothesis for reference. The evaluation criteria is called 'Matched score', which is in a 6-point Likert scale (from 5 to 0). Particularly, \n5 points mean that the proposed hypothesis (1) covers three key points (or covers all the key points) in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, and (2) does not contain any extra key point(s) that is redundant, unnecessary, unhelpful, or harmful; \n4 points mean that the proposed hypothesis (1) covers three key points (or covers all the key points) in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, and (2) but also contain extra key point(s) that is redundant, unnecessary, unhelpful, or harmful; \n3 points mean that the proposed hypothesis (1) covers two key points in the groundtruth hypothesis, where every key point is leveraged nearly identically as in the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; \n2 points mean that the proposed hypothesis (1) covers one key point in the groundtruth hypothesis, and leverage it nearly identically as in the groundtruth hypothesis, (2) but does not cover all key points in the groundtruth hypothesis, and (3) might or might not contain extra key points; \n1 point means that the proposed hypothesis (1) covers at least one key point in the groundtruth hypothesis, but all the covered key point(s) are used differently as in the groundtruth hypothesis, and (2) might or might not contain extra key points; \n0 point means that the proposed hypothesis does not cover any key point in the groundtruth hypothesis at all. \nUsually total the number of key points a groundtruth hypothesis contain is less than or equal to three. Please note that the total number of key points in the groundtruth hypothesis might be less than three, so that multiple points can be given. E.g., there's only one key point in the groundtruth hypothesis, and the proposed hypothesis covers the one key point nearly identically, it's possible to give 2 points, 4 points, and 5 points. In this case, we should choose score from 4 points and 5 points, depending on the existence and quality of extra key points. 'Leveraging a key point nearly identically as in the groundtruth hypothesis means that in the proposed hypothesis, the same (or very related) concept (key point) is used in a very similar way with a very similar goal compared to the groundtruth hypothesis. \nWhen judging whether an extra key point has apparent flaws, you should use your own knowledge and understanding of that discipline to judge, rather than only relying on the count number of pieces of extra key point to judge. \nPlease evaluate the proposed hypothesis based on the groundtruth hypothesis. \nThe proposed hypothesis is: ", "\n\nThe groundtruth hypothesis is: ", "\n\nThe key points in the groundtruth hypothesis are: ", "\n\nPlease carefully reason through your evaluation based on the criteria above first before providing your score. Your answer should strictly follow this template:\n\n**Matched score starts:** [0-5] **Matched score ends**"]
     else:
         raise NotImplementedError
     
@@ -226,21 +244,21 @@ def exchange_order_in_list(input_list):
 
 
 
-# calculate the ratio if how the selected inspirations hit the groundtruth inspirations. 
-def calculate_average_ratio_top1_top2(file_dir):
-    with open(file_dir, 'r') as f:
-        d = json.load(f)
-
-    ratio_top1, ratio_top2 = 0, 0
-    cnt_ratio = 0
-    for i in d[1]:
-        cur_ratio = d[1][i]
-        ratio_top1 += cur_ratio[0]
-        ratio_top2 += cur_ratio[1]
-        cnt_ratio += 1
-    ratio_top1 = ratio_top1 / cnt_ratio
-    ratio_top2 = ratio_top2 / cnt_ratio
-    return ratio_top1, ratio_top2
+# # UNUSED: calculate the ratio if how the selected inspirations hit the groundtruth inspirations. 
+# def calculate_average_ratio_top1_top2(file_dir):
+#     with open(file_dir, 'r') as f:
+#         d = json.load(f)
+# 
+#     ratio_top1, ratio_top2 = 0, 0
+#     cnt_ratio = 0
+#     for i in d[1]:
+#         cur_ratio = d[1][i]
+#         ratio_top1 += cur_ratio[0]
+#         ratio_top2 += cur_ratio[1]
+#         cnt_ratio += 1
+#     ratio_top1 = ratio_top1 / cnt_ratio
+#     ratio_top2 = ratio_top2 / cnt_ratio
+#     return ratio_top1, ratio_top2
 
 
 ## Function: used by load_chem_annotation() and load_chem_annotation_with_feedback(); used to recover background_survey_strict and background_question_strict
@@ -463,18 +481,18 @@ def organize_raw_inspirations(selected_insp):
     return organized_insp
 
 
-# insp_grouping_results: {insp title: [[other insp title, reason], ...]}
-def load_grouped_inspirations(inspiration_group_path):
-    with open(inspiration_group_path, 'r') as f:
-        insp_grouping_results = json.load(f)
-    return insp_grouping_results
+# # UNUSED: insp_grouping_results: {insp title: [[other insp title, reason], ...]}
+# def load_grouped_inspirations(inspiration_group_path):
+#     with open(inspiration_group_path, 'r') as f:
+#         insp_grouping_results = json.load(f)
+#     return insp_grouping_results
 
 
-# coarse_grained_hypotheses: {core_insp_title: [[hypothesis, reasoning process], ...]}
-def load_coarse_grained_hypotheses(coarse_grained_hypotheses_path):
-    with open(coarse_grained_hypotheses_path, 'r') as f:
-        coarse_grained_hypotheses = json.load(f)
-    return coarse_grained_hypotheses
+# # UNUSED: coarse_grained_hypotheses: {core_insp_title: [[hypothesis, reasoning process], ...]}
+# def load_coarse_grained_hypotheses(coarse_grained_hypotheses_path):
+#     with open(coarse_grained_hypotheses_path, 'r') as f:
+#         coarse_grained_hypotheses = json.load(f)
+#     return coarse_grained_hypotheses
     
 
 # Call Openai API,k input is prompt, output is response
@@ -520,6 +538,18 @@ def llm_generation(prompt, model_name, client, temperature=1.0, api_type=0):
     # print("generation: ", generation)
     return generation
 
+
+"""
+UNUSED FUNCTIONS - COMMENTED OUT (no longer imported by any module)
+These functions were part of the old extraction system and are no longer used:
+- llm_generation_while_loop
+- get_structured_generation_from_raw_generation_by_llm  
+- get_structured_generation_from_raw_generation
+
+They have been replaced by the new marker-based extraction system:
+- llm_generation_with_extraction
+- llm_generation_with_multiple_extractions
+- extract_field
 
 ## Function:
 #   llm inference with the prompt + guarantee to reply a structured generation accroding to the template (guarantee by the while loop)
@@ -579,6 +609,7 @@ def llm_generation_while_loop(prompt, model_name, client, if_structured_generati
         return generation
     
 
+# UNUSED BUT KEPT FOR BACKWARD COMPATIBILITY (used by llm_generation_while_loop which is also unused)
 def get_structured_generation_from_raw_generation_by_llm(gene, template, client, temperature, model_name, api_type):
     assert isinstance(gene, str), print("type(gene): ", type(gene))
     # use .strip("#") to remove the '#' or "*" in the gene (the '#' or "*" is usually added by the LLM as a markdown format); used to match text (eg, title)
@@ -615,6 +646,7 @@ def get_structured_generation_from_raw_generation_by_llm(gene, template, client,
 
 
 
+# UNUSED BUT KEPT FOR BACKWARD COMPATIBILITY (used by unused llm_generation_while_loop functions)
 # gene: (generated) text; '#' and '*' will be removed from gene, since they are assumed to be generated by LLM as markdown format --- this format can result in not exact match between the title extracted from generation and the groundtruth title in the benchmark
 # template: ['Title:', 'Reason:']
 # structured_gene: [[Title, Reason], ...]
@@ -670,177 +702,90 @@ def get_structured_generation_from_raw_generation(gene, template):
             cur_gs_split[i] = cur_gs_split[i].strip().strip(";").strip()
         structured_gene.append(cur_gs_split)
     return structured_gene
+"""  # END OF UNUSED FUNCTIONS
 
+
+def extract_scores(cur_generation):
+    """
+    Extract evaluation scores using a unified approach that works for all model types.
+    
+    Returns: (scores, reasons, success) tuple where:
+        - scores: list of 4 integer scores [validness, novelty, significance, specificity]
+        - reasons: list of 4 strings with reasons for each score
+        - success: boolean indicating if all scores were extracted
+    """
+    import re
+    
+    # Clean up reasoning model output
+    cleaned_text = extract_reasoning_model_content(cur_generation)
+    
+    # Define the score types we're looking for
+    score_types = ["Validness", "Novelty", "Significance", "Specificity"]
+    scores = []
+    reasons = []
+    
+    for score_type in score_types:
+        # Try marker-based extraction first
+        reason = extract_field(cleaned_text, f"{score_type} Reason", expected_type='text', strict_extraction=True)
+        score = extract_field(cleaned_text, f"{score_type} Score", expected_type='number', strict_extraction=True)
+        
+        # If marker extraction failed, try simpler patterns
+        if score is None:
+            # Try patterns like "Validness score: 4" or "Validness: 4"
+            patterns = [
+                rf"{score_type}\s+score\s*:\s*(\d+)",
+                rf"{score_type}\s*:\s*(\d+)",
+                rf"score\s+for\s+{score_type}\s*:\s*(\d+)",
+            ]
+            
+            for pattern in patterns:
+                match = re.search(pattern, cleaned_text, re.IGNORECASE)
+                if match:
+                    score_str = match.group(1)
+                    if score_str in ["1", "2", "3", "4", "5"]:
+                        score = int(score_str)
+                        break
+        
+        # If we still don't have a reason but have a score, try to extract reason
+        if score is not None and not reason:
+            # Try pattern like "Concise reason for X score: ..."
+            reason_pattern = rf"(?:Concise\s+)?reason\s+for\s+{score_type}\s+score\s*:\s*([^\n]+)"
+            match = re.search(reason_pattern, cleaned_text, re.IGNORECASE)
+            if match:
+                reason = match.group(1).strip()
+        
+        scores.append(score)
+        reasons.append(reason or "")
+    
+    # Check if all scores were extracted and are valid
+    valid_scores = all(score is not None and 1 <= score <= 5 for score in scores)
+    
+    if valid_scores:
+        return scores, reasons, True
+    else:
+        print(f"Score extraction failed. Extracted scores: {scores}")
+        return [], [], False
 
 
 def pick_score(cur_generation):
     """
-    We have 4 categories, each with two parts:
-      (1) Concise reason for X score:
-          -> reason text might be on the same line or the next line
-      (2) X score:
-          -> numeric score might be on the same line or the next line
-
-    For example, any of the following is valid:
-
-        Concise reason for validness score:
-        <REASON>
-
-        Validness score: 4
-
-    or
-
-        Concise reason for validness score: The reason is ...
-        Validness score: 4
-
-    or even:
-
-        Concise reason for validness score:
-        The reason is ...
-        Validness score:
-        4
-
-    This function tolerates extra text before or after the structure.
+    Legacy function for backward compatibility. Redirects to extract_scores.
+    
+    We have 4 categories with scores and reasons.
+    This function now uses the simplified extract_scores implementation.
     """
-
-    reason_labels = [
-        "Concise reason for validness score:",
-        "Concise reason for novelty score:",
-        "Concise reason for significance score:",
-        "Concise reason for specificity score:"
-    ]
-    score_labels = [
-        "Validness score:",
-        "Novelty score:",
-        "Significance score:",
-        "Specificity score:"
-    ]
-
-    # Acceptable numeric scores
-    valid_scores = {"1", "2", "3", "4", "5"}
-
-    # Break into lines
-    raw_lines = cur_generation.split('\n')
-    # Strip trailing/leading whitespace from each line (but keep line breaks for logic)
-    lines = [line.strip() for line in raw_lines]
-
-    # For final results
-    reason_collection = []
-    score_collection = []
-
-    # We'll parse in the order: reason_label -> reason_text -> score_label -> numeric_score,
-    # repeated 4 times (for validness, novelty, significance, potential).
-
-    # We keep a pointer as we move through lines
-    i = 0
-    n = len(lines)
-
-    # Function to find the next line (starting at index start_idx) that *contains* `label`.
-    # Returns the index (line number) or None if not found.
-    def find_label(label, start_idx):
-        label_lower = label.lower()
-        for idx in range(start_idx, n):
-            if lines[idx].lower().startswith(label_lower):
-                return idx
-        return None
-
-    # Function to extract content either on the same line (after the label) OR from the next line(s).
-    #  - If there's text following the label on the same line, use that.
-    #  - Otherwise, look at the next line if it exists.
-    # Returns (content_str, next_idx), or (None, None) on failure.
-    def extract_content(label, label_idx):
-        # The line with the label:
-        line_with_label = lines[label_idx]
-
-        # Check if the label and content are on the same line
-        # e.g. "Concise reason for validness score: The reason is right here"
-        # We'll remove the label part from that line and see if there's leftover text
-        stripped_label_part = line_with_label[: len(label)]
-        leftover = line_with_label[len(label):].strip(" \t:")  # remove trailing : and spaces
-
-        if leftover:
-            # We have content on the same line
-            return leftover, label_idx + 1
-        else:
-            # No leftover text on the same line; we want the next line if it exists
-            if label_idx + 1 < n:
-                # The next line is presumably the content
-                next_line_content = lines[label_idx + 1].strip()
-                if next_line_content:
-                    return next_line_content, label_idx + 2
-                else:
-                    # The next line was empty, so maybe we look further?
-                    # You could decide to skip blank lines. Here let's skip blank lines
-                    j = label_idx + 1
-                    while j < n and not lines[j].strip():
-                        j += 1
-                    if j < n:
-                        return lines[j].strip(), j + 1
-                    else:
-                        return None, None
-            else:
-                return None, None
-
-    # Now parse each of the four reason+score pairs
-    search_start = 0
-    for reason_label, score_label in zip(reason_labels, score_labels):
-
-        # 1) Find the reason label
-        pos_reason_label = find_label(reason_label, search_start)
-        if pos_reason_label is None:
-            print(f"Could not find label: '{reason_label}' starting at line {search_start}.")
-            return [], [], False
-
-        # 2) Extract reason text
-        reason_text, next_idx = extract_content(reason_label, pos_reason_label)
-        if reason_text is None:
-            print(f"No reason text found after label '{reason_label}'.")
-            return [], [], False
-        reason_collection.append(reason_text)
-
-        # 3) Find the corresponding score label, starting at next_idx
-        pos_score_label = find_label(score_label, next_idx)
-        if pos_score_label is None:
-            print(f"Could not find label: '{score_label}' after '{reason_label}'.")
-            return [], [], False
-
-        # 4) Extract numeric score
-        score_text, next_idx_score = extract_content(score_label, pos_score_label)
-        if score_text is None:
-            print(f"No numeric score found after label '{score_label}'.")
-            return [], [], False
-
-        # Clean up the score text: remove 'points', 'point', '*' if present
-        clean_score = (
-            score_text.replace("points", "")
-                      .replace("point", "")
-                      .replace("*", "")
-                      .strip()
-        )
-        if clean_score not in valid_scores:
-            print(f"Score '{clean_score}' is not in {valid_scores}.")
-            return [], [], False
-        score_collection.append(int(clean_score))
-
-        # Update our search position so that the next search starts after we used the score
-        search_start = next_idx_score
-
-    # Finally, we consider it successful if we have 4 reasons and 4 scores
-    if len(reason_collection) == 4 and len(score_collection) == 4:
-        return score_collection, reason_collection, True
-    else:
-        print("Mismatch in number of scores/reasons extracted.")
-        print("cur_generation:", cur_generation)
-        return [], [], False
+    # Simply redirect to the new extract_scores function
+    return extract_scores(cur_generation)
 
 
-## Function
-#  calculate the average score of the four aspects. The score range is [0, 1]
 def jaccard_similarity(str1, str2):
+    """Calculate Jaccard similarity between two strings."""
     words1 = set(str1.split())
     words2 = set(str2.split())
     intersection = words1.intersection(words2)
     union = words1.union(words2)
+    if len(union) == 0:
+        return 0
     return len(intersection) / len(union)
 
 
@@ -901,22 +846,341 @@ def if_element_in_list_with_similarity_threshold(list_elements, element, thresho
     return False
 
 
-def save_with_json(data, file_dir):
-    with open(file_dir, 'w') as f:
-        json.dump(data, f)
+# # UNUSED
+# def save_with_json(data, file_dir):
+#     with open(file_dir, 'w') as f:
+#         json.dump(data, f)
 
 
 
-# Function: transfer a list to set, while maintaining order
-def ordered_set(input_list):
-    set_list = []
-    for item in input_list:
-        if item not in set_list:
-            set_list.append(item)
-    return set_list
+# # UNUSED: Function: transfer a list to set, while maintaining order
+# def ordered_set(input_list):
+#     set_list = []
+#     for item in input_list:
+#         if item not in set_list:
+#             set_list.append(item)
+#     return set_list
 
+
+# -------------------------------------------------------------
+# New extraction functions for marker-based extraction
+# -------------------------------------------------------------
+
+def extract_between_markers(source: str, label_regex: str):
+    """Return text between '<label> starts' and '<label> ends'.
+
+    Parameters
+    ----------
+    source : str
+        The raw LLM response.
+    label_regex : str
+        A *REGEX* describing the label (e.g. 'Research\\s*question' or
+        'Inspiration\\s+1'). It should NOT contain the 'starts'/'ends'
+        keywords; they are added internally.
+
+    Returns
+    -------
+    str | None
+        The extracted content with compacted whitespace, or None if the
+        pattern is not found.
+    """
+    # Remove markdown emphasis to simplify matching.
+    plain = re.sub(r'[\*_]+', '', source)
+
+    pattern = rf'{label_regex}\s*starts\s*:?\s*([\s\S]+?)\s*{label_regex}\s*ends'
+
+    m = re.search(pattern, plain, flags=re.IGNORECASE | re.DOTALL)
+    if not m:
+        return None
+
+    content = m.group(1).strip()
+    return content if content else None
+
+
+def extract_reasoning_model_content(text):
+    """
+    Extract the actual answer from reasoning models that use <think> or <answer> tags.
+    Also removes thinking patterns for cleaner extraction.
+    Returns the content after the thinking section.
     
+    Compatible with various reasoning models including DeepSeek-R1, o1, etc.
+    """
+    import re
+    
+    # Keep original text in case we need to return it
+    original_text = text
+    
+    # First, check if this is DeepSeek-R1 format with <answer> tags
+    answer_match = re.search(r'<answer>(.*?)</answer>', text, re.DOTALL | re.IGNORECASE)
+    if answer_match:
+        # Found answer tags - this is DeepSeek-R1 format
+        text = answer_match.group(1).strip()
+    else:
+        # Handle malformed responses where content comes after </think>
+        after_think_match = re.search(r'</think>\s*\n(.+)', text, re.DOTALL | re.IGNORECASE)
+        if after_think_match:
+            # Extract everything after </think>
+            text = after_think_match.group(1).strip()
+        else:
+            # Remove any <think> content (complete or partial)
+            patterns_to_remove = [
+                r'<think>.*?</think>',  # Complete think tags
+                r'<think>.*$',  # Unclosed think tag at end
+                r'^.*</think>',  # Everything up to and including </think>
+                r'</think>?\s*$',  # Trailing closing tag (with optional typo)
+                r'</think>',  # Any remaining closing tags
+                r'<think>',  # Any remaining opening tags
+            ]
+            
+            cleaned_text = text
+            for pattern in patterns_to_remove:
+                cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
+            text = cleaned_text
+    
+    # Check if we have marked sections (e.g., "**Field starts:**")
+    has_marked_sections = bool(re.search(r'\*\*\w+.*(?:starts|ends)\*\*', text))
+    
+    if not has_marked_sections:
+        # Only apply cleanup if we don't have marked sections
+        # Remove common thinking/explanation patterns at the end
+        thinking_patterns = [
+            r',\s*as\s+requested\.\s*$',
+            r'\.\s*This\s+precisely.*$',
+            r'\.\s*I\'ll\s+.*$',
+            r'\.\s*Let\s+me\s+.*$',
+            r'without\s+additional\s+commentary.*$',
+        ]
+        
+        for pattern in thinking_patterns:
+            text = re.sub(pattern, '', text, flags=re.IGNORECASE | re.MULTILINE)
+    
+    # Final cleanup
+    text = text.strip()
+    
+    # Return cleaned text, or original if cleaning resulted in empty string
+    return text if text else original_text
 
+
+def extract_field(text, field_name, expected_type='text', strict_extraction=False):
+    """Universal field extraction with type awareness.
+    
+    Args:
+        text: The LLM response text
+        field_name: The field to extract (e.g., "Hypothesis", "Answer", "Redundant")
+        expected_type: 'text', 'bool'/'yes_no', 'number', etc.
+        strict_extraction: If True, only use marker extraction (no fallbacks)
+    
+    Returns:
+        Extracted value in appropriate type, or None if extraction fails
+    """
+    import re
+    
+    # Clean up reasoning model output (remove <think> tags)
+    cleaned_text = extract_reasoning_model_content(text)
+    
+    # Try marker extraction first (works for both types of models after cleaning)
+    result = extract_between_markers(cleaned_text, field_name)
+    
+    # If strict extraction and no marker found, return None
+    if strict_extraction and not result:
+        return None
+    
+    # Process based on expected type
+    if expected_type in ['bool', 'yes_no', 'boolean']:
+        if result:
+            result_lower = result.lower().strip()
+            if result_lower in ['yes', 'true', '1', 'correct', 'valid']:
+                return True
+            elif result_lower in ['no', 'false', '0', 'incorrect', 'invalid']:
+                return False
+        
+        # Simple fallback: check start of cleaned text
+        if not strict_extraction:
+            text_lower = cleaned_text.lower().strip()[:100]
+            if any(word in text_lower for word in ['yes', 'true', 'correct']):
+                return True
+            if any(word in text_lower for word in ['no', 'false', 'incorrect']):
+                return False
+        return None
+    
+    elif expected_type == 'number':
+        if result:
+            numbers = re.findall(r'\d+', result)
+            if numbers:
+                return int(numbers[0])
+        
+        # Simple fallback: look for number in cleaned text
+        if not strict_extraction:
+            numbers = re.findall(r'\b(\d+)\b', cleaned_text[:200])
+            if numbers:
+                return int(numbers[0])
+        return None
+    
+    else:  # Default to text extraction
+        if result:
+            return result.strip()
+        
+        # Simple fallback: look for pattern "field_name: value"
+        if not strict_extraction:
+            escaped_field = re.escape(field_name)
+            # Try simple colon pattern
+            pattern = rf"{escaped_field}[:\s]+(.+?)(?:\n|$)"
+            match = re.search(pattern, cleaned_text, re.IGNORECASE)
+            if match:
+                value = match.group(1).strip()
+                # Remove common markers
+                value = re.sub(r'^\*+|\*+$', '', value).strip()
+                value = re.sub(r'^["\']|["\']$', '', value).strip()
+                return value
+        
+        return None
+
+
+# Helper function for extracting multiple numbered field pairs
+def llm_generation_with_multiple_extractions(prompt, model_name, client, repeating_field_pattern, max_items=10, temperature=1.0, api_type=0, max_retries=3):
+    """
+    Generate LLM response and extract multiple numbered field pairs.
+    Useful for extracting lists like Title 1/Reason 1, Title 2/Reason 2, etc.
+    
+    Args:
+        prompt: The prompt to send to the LLM
+        model_name: The model to use
+        client: The API client
+        repeating_field_pattern: List of tuples defining the pattern that repeats for each numbered item
+                                 [(field_name, expected_type), ...]
+                                 e.g., [("Title", "text"), ("Reason", "text")] 
+                                 will extract Title 1/Reason 1, Title 2/Reason 2, etc.
+        max_items: Maximum number of items to try extracting (default 10)
+        temperature: Temperature for generation
+        api_type: API type (0=OpenAI, 1=Azure, 2=Google)
+        max_retries: Maximum number of retries if extraction fails
+    
+    Returns:
+        List of extracted item dictionaries, e.g., [{"Title": "...", "Reason": "..."}, ...]
+    """
+    for attempt in range(max_retries):
+        try:
+            # Generate response
+            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+            
+            # Extract numbered field pairs
+            extracted_items = []
+            for i in range(1, max_items + 1):
+                item = {}
+                all_fields_found = True
+                
+                for field_name, expected_type in repeating_field_pattern:
+                    # Try to extract this numbered field
+                    value = extract_field(generation, f"{field_name} {i}", expected_type=expected_type, strict_extraction=True)
+                    if value is None:
+                        all_fields_found = False
+                        break
+                    item[field_name] = value
+                
+                # If we found all fields for this item, add it
+                if all_fields_found:
+                    extracted_items.append(item)
+                else:
+                    # Stop looking for more items once we miss one
+                    break
+            
+            # If we got at least one complete item, consider it successful
+            if extracted_items:
+                return extracted_items
+            
+            # If this was the last attempt, return empty list
+            if attempt == max_retries - 1:
+                print(f"Warning: No complete items could be extracted after {max_retries} attempts.")
+                return []
+            
+            # Otherwise, retry with slightly higher temperature
+            temperature = min(temperature + 0.1, 1.5)
+            print(f"No items extracted (attempt {attempt + 1}/{max_retries}), retrying...")
+            
+        except Exception as e:
+            print(f"Error during extraction attempt {attempt + 1}: {e}")
+            if attempt == max_retries - 1:
+                return []
+    
+    return []
+
+
+# New function to replace llm_generation_while_loop with simpler extraction
+def llm_generation_with_extraction(prompt, model_name, client, expected_fields=None, temperature=1.0, api_type=0, max_retries=15):
+    """
+    Generate LLM response and extract structured fields using marker-based extraction.
+    Includes retry logic if extraction fails.
+    
+    Args:
+        prompt: The prompt to send to the LLM
+        model_name: The model to use
+        client: The API client
+        expected_fields: List of tuples [(field_name, expected_type), ...]
+                        e.g., [("Title", "text"), ("Reason", "text")]
+                        Supported types: "text", "number", "yes_no" (or "bool"/"boolean")
+        temperature: Temperature for generation
+        api_type: API type (0=OpenAI, 1=Azure, 2=Google)
+        max_retries: Maximum number of retries if extraction fails (default 15)
+    
+    Returns:
+        If expected_fields is provided: dict with extracted fields
+        Otherwise: raw generation text
+    """
+    # If no expected fields, just return raw generation
+    if not expected_fields:
+        generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+        return generation
+    
+    # Validate expected_fields format
+    if not isinstance(expected_fields, list):
+        raise ValueError("expected_fields must be a list of tuples [(field_name, expected_type), ...]")
+    for field_info in expected_fields:
+        if not isinstance(field_info, tuple) or len(field_info) != 2:
+            raise ValueError(f"Each field must be a tuple of (field_name, expected_type). Got: {field_info}")
+        field_name, expected_type = field_info
+        if expected_type not in ['text', 'number', 'yes_no', 'bool', 'boolean']:
+            raise ValueError(f"Unsupported expected_type '{expected_type}' for field '{field_name}'. "
+                           f"Supported types: 'text', 'number', 'yes_no' (or 'bool'/'boolean')")
+    
+    # Try extraction with retries
+    for attempt in range(max_retries):
+        try:
+            # Generate response
+            generation = llm_generation(prompt, model_name, client, temperature=temperature, api_type=api_type)
+            
+            # Extract fields
+            extracted = {}
+            all_fields_extracted = True
+            
+            for field_name, expected_type in expected_fields:
+                value = extract_field(generation, field_name, expected_type=expected_type, strict_extraction=True)
+                extracted[field_name] = value
+                
+                # Check if extraction failed (None or empty for text fields)
+                if value is None or (expected_type == 'text' and value == ""):
+                    all_fields_extracted = False
+                    print(f"Warning: Failed to extract field '{field_name}' (attempt {attempt + 1}/{max_retries})")
+            
+            # If all required fields were extracted successfully, return
+            if all_fields_extracted:
+                return extracted
+            
+            # If this was the last attempt, return what we got
+            if attempt == max_retries - 1:
+                print(f"Warning: Some fields could not be extracted after {max_retries} attempts.")
+                return extracted
+            
+            # Otherwise, retry with slightly higher temperature
+            temperature = min(temperature + 0.1, 1.5)
+            
+        except Exception as e:
+            print(f"Error during extraction attempt {attempt + 1}: {e}")
+            if attempt == max_retries - 1:
+                # On final attempt, return empty dict for all fields
+                return {field_name: None for field_name, _ in expected_fields}
+    
+    # Should not reach here, but return empty dict as fallback
+    return {field_name: None for field_name, _ in expected_fields}
 
 
 

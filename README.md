@@ -65,7 +65,7 @@ Then, open `main.sh` and configure the following parameters:
 
 > 🔧 **Note:**
 > 1. Set `api_type` to `0` if you're using an OpenAI API key, and to `1` if you're using an Azure OpenAI API key.
-> 2. The current code performs better with non-reasoning models such as GPT-4o or GPT-4o-mini, as its current answer extraction logic is specifically designed to align with the concise, non-reasoning outputs these models produce.
+> 2. The current code supports both non-reasoning models such as GPT-4o and reasoning models such as DeepSeek-R1.
 >
 > 💡 **Tip:**
 > You can assign the same model name to all three tasks (`model_name_insp_retrieval`, `model_name_gene`, and `model_name_eval`).
