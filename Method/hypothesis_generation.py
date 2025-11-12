@@ -200,6 +200,7 @@ class HypothesisGenerationEA(object):
         # best_hypothesis_collection_for_recomb: {core_insp_title: [[best_hypothesis, best_hypothesis_score, [best_mutation_id], best_ave_score]], ...}
         best_hypothesis_collection_for_recomb, _ = self.select_top_self_evaluated_hypothesis(final_data_collection, backgroud_question, step_id=1, top_ratio_to_keep=1.0)
         # iterate over each (insp, hyp) pair in filtered_ranked_top_insp_list
+        recombinations_performed = 0
         for cur_node_id in range(len(filtered_ranked_top_insp_list)):
             cur_insp_id = filtered_ranked_top_insp_list[cur_node_id][0]
             # add abstract to screened_insp_cur_bq in addition to title and reason
@@ -225,7 +226,9 @@ class HypothesisGenerationEA(object):
             this_mutation = filtered_ranked_top_insp_list[cur_node_id][1]
             ## screening all other (inspiration, hypothesis) pairs for recombination with the current (inspiration, hypothesis) pair
             print("Inspiration screening..")
-            assert len(other_mutations) >= 1
+            if len(other_mutations) == 0:
+                print(f"No other inspirations available for recombination with inspiration '{cur_insp_title}'. Skipping recombination for this node.")
+                continue
             # each screening inference will select 3 inspirations
             if len(other_mutations) <= self.args.num_screening_keep_size:
                 selected_other_mutations = other_mutations
@@ -263,6 +266,9 @@ class HypothesisGenerationEA(object):
                 # print scores
                 print("\tcur_insp: {}; hyp_numerical_self_eval: {}".format(cur_other_mutation[0], cur_hypothesis_collection[-1][-1][0]))
                 final_data_collection[backgroud_question][cur_insp_title][this_recom_mutation_id][cur_node_prev_round_branch_mutation_id][cur_other_mutation[0]] = cur_hypothesis_collection
+                recombinations_performed += 1
+        
+        print(f"Inter-EA Step {step_id} completed. Total recombinations performed: {recombinations_performed}")
         return final_data_collection
     
 
