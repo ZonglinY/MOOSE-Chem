@@ -177,12 +177,18 @@ class HypothesisGenerationEA(object):
         elif len(recom_inspiration_ids_user_input) > 0:
             # filter twice; first is by recom_inspiration_ids_user_input; second is by recom_num_beam_size
             filtered_ranked_top_insp_list = [item for item in ranked_top_insp_list if item[0] in recom_inspiration_ids_user_input]
+            if len(filtered_ranked_top_insp_list) == 0:
+                print("No ranked inspirations matched user-specified IDs. Skipping inter-EA recombination.")
+                return final_data_collection
             num_top_insp_to_keep = min(self.args.recom_num_beam_size, len(filtered_ranked_top_insp_list))
             # smallest_ave_score_threshold: to reduce randomness caused by the random order of same scored hypothesis nodes
             smallest_ave_score_threshold = filtered_ranked_top_insp_list[num_top_insp_to_keep-1][4]
             filtered_ranked_top_insp_list = [item for item in filtered_ranked_top_insp_list if item[4] >= smallest_ave_score_threshold]
         else:
             # filter once; by recom_num_beam_size
+            if len(ranked_top_insp_list) == 0:
+                print("No ranked inspirations available. Skipping inter-EA recombination.")
+                return final_data_collection
             num_top_insp_to_keep = min(self.args.recom_num_beam_size, len(ranked_top_insp_list))
             # smallest_ave_score_threshold: to reduce randomness caused by the random order of same scored hypothesis nodes
             smallest_ave_score_threshold = ranked_top_insp_list[num_top_insp_to_keep-1][4]
